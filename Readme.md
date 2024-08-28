@@ -14,33 +14,15 @@ Functional programming means that these implementations contain no side-effects 
 
 ## Kuhn poker
 
-Like other introductions to CFR, I've used [Kuhn poker](https://en.wikipedia.org/wiki/Kuhn_poke) in these examples because it is a very simple imperfect information card game, but does not have an obvious "best" strategy. The rules are described below.
+Like other introductions to CFR, I've used [Kuhn poker](https://en.wikipedia.org/wiki/Kuhn_poke) in these examples because it is a very simple imperfect information card game, but does not have an obvious "best" strategy.
 
 Note that Kuhn poker is zero-sum, two player game. In other words, one player's gain is the other player's loss. For simplicity, the implementations of CFR described here rely on this fact and can be adapted to other zero-sum, two player imperfect information games as well.
 
-## Kuhn poker rules
+## Regret
 
-**Deck and Setup:**
-* The game uses a deck of only three cards: King, Queen, and Jack.
-* Each player antes 1 chip (a blind bet) at the start of the game.
+"Regret" is really a very confusing term, and "counterfactual regret" even more so. In CFR, we're actually trying to choose the actions that have the *highest* regret, meaning that we most regret not choosing them in the past. (Like I said, confusing.)
 
-**Dealing:**
-* Each player is dealt one card at random, face down, and the third card is set aside unseen.
-
-**Gameplay:**
-* Player 1 can either check or bet 1 chip.
-* If Player 1 checks, Player 2 can check or bet 1 chip.
-  * If both players check, the player with the higher card wins the pot of 2 chips.
-  * If Player 2 bets, Player 1 can fold or call.
-    * If Player 1 folds, Player 2 wins the pot of 3 chips.
-    * If Player 1 calls, there is a showdown, and the player with the higher card wins the pot of 4 chips.
-* If Player 1 bets, Player 2 can fold or call.
-  * If Player 2 folds, Player 1 wins the pot of 3 chips.
-  * If Player 2 calls, there is a showdown, and the player with the higher card wins the pot of 4 chips.
-
-**Winning:**
-* The player with the higher card wins the pot in a showdown.
-* If a player folds, the other player wins the pot.
+I think it's much easier to conceptualize this as choosing actions that have the highest value, or utility, or "advantage" instead.
 
 ## Running the code
 
