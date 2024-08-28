@@ -12,9 +12,9 @@ Each script in this repository demonstrates a particular variation of CFR in F#,
 
 Functional programming means that these implementations contain no side-effects or mutable variables. I find that such code is much easier to understand and reason about than the kind of Python typically used in machine learning. (I think the ML community could really benefit from better software engineering, but that's a topic for another day.)
 
-## Kuhn poker
+## Kuhn Poker
 
-Like other introductions to CFR, I've used [Kuhn poker](https://en.wikipedia.org/wiki/Kuhn_poke) in these examples because it is a very simple imperfect information card game, but does not have an obvious "best" strategy.
+Like other introductions to CFR, I've used [Kuhn Poker](https://en.wikipedia.org/wiki/Kuhn_poke) in these examples because it is a very simple imperfect information card game, but does not have an obvious "best" strategy.
 
 Note that Kuhn poker is zero-sum, two player game. In other words, one player's gain is the other player's loss. For simplicity, the implementations of CFR described here rely on this fact and can be adapted to other zero-sum, two player imperfect information games as well.
 
@@ -25,6 +25,21 @@ Note that Kuhn poker is zero-sum, two player game. In other words, one player's 
 I think it's much easier to conceptualize this as choosing actions that have the highest value, or utility, or "advantage" instead.
 
 ## Information sets
+
+An information set contains all of the current player's information about the state of the game at a given decision point. For example, in Kuhn Poker, `Jcb` describes the situation where Player 1 has a Jack (`J`) and checked (`c`) as the first action, then Player 2 bet (`b`). Player 1 now has the option of betting or folding, but does not know whether Player 2 has a Queen or a King. There are 12 such information sets in Kuhn Poker:
+
+| Player 1's turn | Player 2's turn |
+| --------------- |---------------- |
+| `J`             | `Jb`            |
+| `Q`             | `Jc`            |
+| `K`             | `Qb`            |
+| `Jcb`           | `Qc`            |
+| `Qcb`           | `Kb`            |
+| `Kcb`           | `Kc`            |
+
+We use `c` to represent both a check and a fold, and we use `b` to represent both a bet and a call.
+
+Note that the information sets in a game form a tree. Each valid action at a decision point leads to a child information set. Leaf nodes in the tree represent the final states of the game and are called "terminal" states.
 
 ## Running the code
 
