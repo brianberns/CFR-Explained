@@ -20,11 +20,9 @@ Note that Kuhn poker is zero-sum, two player game. In other words, one player's 
 
 ## Regret
 
-"Regret" is really a very confusing term, and "counterfactual regret" even more so. In CFR, we're actually trying to choose the actions that have the *highest* regret, meaning that we most regret not choosing them in the past. (Like I said, confusing.)
+"Regret" is really a very confusing term, and "counterfactual regret" even more so. In CFR, we're actually trying to choose the actions that have the *highest* regret, meaning that we most regret not choosing them in the past. (Like I said, confusing.) An action's regret might be positive (good) or negative (bad).
 
-I think it's much easier to conceptualize this as choosing actions that have the highest value, or utility, or "advantage" instead.
-
-Note that an action's regret might be positive (good) or negative (bad).
+I think it's much easier to conceptualize this as choosing actions that have the highest value, or utility, or advantage instead. In CFR, all of these terms mean roughly the same thing as regret.
 
 ## Information sets
 
