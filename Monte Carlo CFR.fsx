@@ -96,7 +96,7 @@ module InformationSet =
     /// regrets.
     let getStrategy infoSet =
         infoSet.RegretSum
-            |> Vector.map (max 0.0)   // ignore negative regrets
+            |> Vector.map (max 0.0)   // clamp negative regrets
             |> normalize
 
     /// Accumulates results.

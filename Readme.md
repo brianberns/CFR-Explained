@@ -55,9 +55,37 @@ type InformationSet =
     }
 ```
 
-To choose an action at a given decision point, we want to give each possible action a probability that is propotional to its utility, so that more useful actions are chosen more often. This is known as "regret matching".
+To choose an action at a given decision point, we want to give each possible action a probability that is proportional to its utility, so that more useful actions are chosen more often. This is known as "regret matching".
 
-One complication in regret matching is what to do about negative regrets (i.e. actions that have resulted in bad outcomes overall). In vanilla CFR, we clamp the regret of such actions to 0 during regret matching, in order to prevent them from being chosen.
+One complication in regret matching is what to do about negative regrets (i.e. actions that have resulted in bad outcomes overall). Vanilla CFR clamps the regret of such actions to 0 during regret matching, in order to prevent them from being chosen. If all of the info set's actions have a non-positive regret, vanilla CFR chooses one at random. Here is the regret matching implementation in F#:
+
+```fsharp
+module InformationSet =
+
+    /// Uniform strategy: All actions have equal probability.
+    let private uniformStrategy =
+        DenseVector.create
+            KuhnPoker.actions.Length
+            (1.0 / float KuhnPoker.actions.Length)
+
+    /// Normalizes a strategy such that its elements sum to
+    /// 1.0 (to represent action probabilities).
+    let private normalize strategy =
+
+            // assume no negative values during normalization
+        assert(Vector.forall (fun x -> x >= 0.0) strategy)
+
+        let sum = Vector.sum strategy
+        if sum > 0.0 then strategy / sum
+        else uniformStrategy
+
+    /// Computes regret-matching strategy from accumulated
+    /// regrets.
+    let getStrategy infoSet =
+        infoSet.RegretSum
+            |> Vector.map (max 0.0)   // clamp negative regrets
+            |> normalize
+```
 
 ## Running the code
 
