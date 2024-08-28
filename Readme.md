@@ -4,11 +4,11 @@
 
 Counterfactual Regret Minimization (CFR) is an important machine learning algorithm for playing "imperfect information" games. These are games where some information about the state of the game is hidden from the players, but the rules and objectives are known. This is common, for example, in card games, where each player's cards are hidden from the other players. Thus, chess is a perfect information game (nothing is hidden), while Poker, Clue, Battleship, and Stratego are imperfect information games.
 
-This is my attempt to explain CFR and its variations in a concise, simple way using code. As I was learning about CFR, I found some aspects difficult to understand, due to confusing terminology and poor implementations (in my opinion). The dense math of academic papers that these algorithms didn't help much either.
+This is my attempt to explain CFR and its variations in a concise, simple way using code. As I was learning about CFR, I found some aspects difficult to understand, due to confusing terminology and poor implementations (in my opinion). The dense math of academic papers that introduced these algorithms didn't help much either.
 
 ## Implementations
 
-Each script in this repository demonstrates a particular variation of CFR in F#, a functional programming language for the .NET platform. For clarity, each script is self-contained - there is no code shared between them.
+Each script in this repository demonstrates a particular variation of CFR in F#, a functional programming language for the .NET platform. For clarity, each script is self-contained – there is no code shared between them.
 
 Functional programming means that these implementations contain no side-effects or mutable variables. I find that such code is much easier to understand and reason about than the kind of Python typically used in machine learning. (I think the ML community could really benefit from better software engineering, but that's a topic for another day.)
 
@@ -26,7 +26,7 @@ I think it's much easier to conceptualize this as choosing actions that have the
 
 ## Information sets
 
-An information set contains all of the current player's information about the state of the game at a given decision point. For example, in Kuhn Poker, `Jcb` describes the situation where Player 1 has a Jack (`J`) and checked (`c`) as the first action, then Player 2 bet (`b`). Player 1 now has the option of betting or folding, but does not know whether Player 2 has a Queen or a King. There are 12 such information sets in Kuhn Poker:
+An information set contains all of the current player's information about the state of the game at a given decision point. For example, in Kuhn Poker, `Qcb` describes the situation where Player 1 has a Queen (`Q`) and checked (`c`) as the first action, then Player 2 bet (`b`). Player 1 now has the option of calling or folding, but does not know whether Player 2 has the Jack or the King. There are 12 such information sets in Kuhn Poker:
 
 | Player 1's turn | Player 2's turn |
 | --------------- |---------------- |

@@ -275,7 +275,7 @@ let run () =
         strategyMap
             |> Map.toSeq
             |> Seq.sortBy (fst >> String.length)
-    printfn "History    Bet      Pass"
+    printfn "History    Bet      Check"
     for name, strategy in namedStrategies do
         let strs =
             strategy
