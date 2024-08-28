@@ -251,13 +251,13 @@ let run () =
         strategyMap
             |> Map.toSeq
             |> Seq.sortBy (fst >> String.length)
-    printfn "History    Bet      Check"
+    printfn "History   Bet    Check"
     for name, strategy in namedStrategies do
-        let strs =
+        let str =
             strategy
                 |> Seq.map (sprintf "%0.5f")
-                |> Seq.toList
-        printfn $"%-3s{name}:    {strs}"
+                |> String.concat " "
+        printfn $"%-3s{name}:    {str}"
     assert(
         let betAction = 0
         let k = strategyMap["K"][betAction]
