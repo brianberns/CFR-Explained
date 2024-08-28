@@ -10,7 +10,7 @@ This is my attempt to explain CFR and its variations in a concise, simple way us
 
 Each script in this repository demonstrates a particular variation of CFR in F#, a functional programming language for the .NET platform. For clarity, each script is self-contained - there is no code shared between them.
 
-Functional programming means that these implementations contain no side-effects or mutable variables. I find that such code is much easier to understand and reason about than the Python typically used in machine learning.
+Functional programming means that these implementations contain no side-effects or mutable variables. I find that such code is much easier to understand and reason about than the kind of Python typically used in machine learning. (I think the ML community could really benefit from better software engineering, but that's a topic for another day.)
 
 ## Kuhn poker
 
@@ -23,6 +23,8 @@ Note that Kuhn poker is zero-sum, two player game. In other words, one player's 
 "Regret" is really a very confusing term, and "counterfactual regret" even more so. In CFR, we're actually trying to choose the actions that have the *highest* regret, meaning that we most regret not choosing them in the past. (Like I said, confusing.)
 
 I think it's much easier to conceptualize this as choosing actions that have the highest value, or utility, or "advantage" instead.
+
+## Information sets
 
 ## Running the code
 
