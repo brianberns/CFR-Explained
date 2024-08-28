@@ -57,7 +57,7 @@ type InformationSet =
 
 To choose an action at a given decision point, we want to give each possible action a probability that is proportional to its utility, so that more useful actions are chosen more often. This is known as "regret matching".
 
-One complication in regret matching is what to do about negative regrets (i.e. actions that have resulted in bad outcomes overall). Vanilla CFR clamps the regret of such actions to 0 during regret matching, in order to prevent them from being chosen. If all of the info set's actions have a non-positive regret, vanilla CFR chooses one at random. Here is the regret matching implementation in F#:
+One complication in regret matching is what to do about negative regrets (i.e. actions that have resulted in bad outcomes overall). Vanilla CFR clamps the regret of such actions to zero during regret matching, in order to prevent them from being chosen. If all of the info set's actions have a non-positive regret, vanilla CFR chooses one at random by assigning them all equal probability. Here is the regret matching implementation in F#:
 
 ```fsharp
 module InformationSet =
