@@ -257,7 +257,7 @@ let run () =
 
         // train
     let numIterations = 10000
-    printfn $"Running Kuhn Poker CFR for {numIterations} iterations\n"
+    printfn $"Running Kuhn Poker Monte Carlo CFR for {numIterations} iterations\n"
     let util, infoSetMap = KuhnCfrTrainer.train numIterations
 
         // expected overall utility
