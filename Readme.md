@@ -24,9 +24,11 @@ Note that Kuhn poker is zero-sum, two player game. In other words, one player's 
 
 I think it's much easier to conceptualize this as choosing actions that have the highest value, or utility, or "advantage" instead.
 
+Note that an action's regret might be positive (good) or negative (bad).
+
 ## Information sets
 
-An information set contains all of the current player's information about the state of the game at a given decision point. For example, in Kuhn Poker, `Qcb` describes the situation where Player 1 has a Queen (`Q`) and checked (`c`) as the first action, then Player 2 bet (`b`). Player 1 now has the option of calling or folding, but does not know whether Player 2 has the Jack or the King. There are 12 such information sets in Kuhn Poker:
+An information set ("info set") contains all of the current player's information about the state of the game at a given decision point. For example, in Kuhn Poker, `Qcb` describes the situation where Player 1 has a Queen (`Q`) and checked (`c`) as the first action, then Player 2 bet (`b`). Player 1 now has the option of calling or folding, but does not know whether Player 2 has the Jack or the King. There are 12 such info sets in Kuhn Poker:
 
 | Player 1's turn | Player 2's turn |
 | --------------- |---------------- |
@@ -39,7 +41,25 @@ An information set contains all of the current player's information about the st
 
 We use `c` to represent both a check and a fold, and we use `b` to represent both a bet and a call.
 
-Note that the information sets in a game form a tree. Each valid action at a decision point leads to a child information set. Leaf nodes in the tree represent the final states of the game and are called "terminal" states.
+Note that the info sets in a game form a tree. Each valid action at a decision point leads to a child info set. Leaf nodes in the tree represent the final states of the game and are called "terminal" states.
+
+## Regret matching
+
+For each info set, we are going to track the total utility ("regret") of each possible action so far. This is stored as a vector, indexed by action (index 0 for bet and index 1 for call in Kuhn Poker):
+
+```fsharp
+type InformationSet =
+    {
+        /// Sum of regrets accumulated so far by this info set.
+        RegretSum : Vector<float>
+
+        ...
+    }
+```
+
+To choose an action at a given decision point, we want to give each possible action a probability that is propotional to its utility, so that more useful actions are chosen more often. This is known as "regret matching".
+
+One complication in regret matching is what to do about negative regrets (i.e. actions that have resulted in bad outcomes overall). In vanilla CFR, we clamp the regret of such actions to 0 during regret matching, in order to prevent them from being chosen.
 
 ## Running the code
 
