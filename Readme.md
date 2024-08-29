@@ -93,6 +93,33 @@ The `getStrategy` function computes a "strategy" vector of action probabilities 
 
 The probability of reaching a particular info set is the product of the probability of each action leading to it. For example, in a game of alternating turns, the probability of reaching an info set might be 1/2 × 1/3 × 1/4 × 1/5 = 1/120, where 1/2 × 1/4 = 1/8 is Player 1's contribution to reaching this state and 1/3 × 1/5 = 1/15 is Player 2's contribution. Note that the overall probability is equal to the product of each player's contribution (1/8 × 1/15 = 1/120). In CFR, each player's contribution to the overall reach probability is tracked separately.
 
+In our implementation, the reach probabilities are stored in a vector that is indexed by player: index 0 for player 1, and index 1 for Player 2. At the start of a game, the reach probability vector is `[| 1.0; 1.0 |]`, since neither player has made a decision yet.
+
+## Vanilla CFR
+
+In the original "vanilla" version of CFR, the utility of an info set is determined by recursively evaluating the outcome of each possible action. First we obtain the current strategy vector for the info set via regret matching:
+
+```fsharp
+let strategy = InformationSet.getStrategy infoSet
+```
+
+For each action, the active player's reach probability must first be updated to reflect the likelihood of taking the action with the current strategy:
+
+```fsharp
+let reachProbs' =
+    reachProbs
+        |> Vector.mapi (fun i x ->
+            if i = activePlayer then
+                x * actionProb
+            else x)
+```
+
+The result is a utility for each child action. From this, the utility of the info set can be calculated by weighting each child utility by its probability:
+
+```fsharp
+let utility = actionUtilities * strategy
+```
+
 ## Running the code
 
  To run a script, install .NET and then execute the script in F# Interactive via `dotnet fsi`. For example:
