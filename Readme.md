@@ -39,7 +39,7 @@ An information set ("info set") contains all of the current player's information
 
 We use `c` to represent both a check and a fold, and we use `b` to represent both a bet and a call.
 
-Note that the info sets in a game form a tree. Each valid action at a decision point leads to a child info set. Leaf nodes in the tree represent the final states of the game and are called "terminal" states.
+The info sets in a game are the internal nodes of a tree. Each valid action at a decision point leads to either a child info set or a "terminal" state where the game is over.
 
 ## Regret matching
 
@@ -86,6 +86,12 @@ module InformationSet =
             |> Vector.map (max 0.0)   // clamp negative regrets
             |> normalize
 ```
+
+The `getStrategy` function computes a "strategy" vector of action probabilities for the given info set.
+
+## Reach probabilities
+
+The probability of reaching a particular info set is the product of the probability of each action leading to it. For example, in a game of alternating turns, the probability of reaching an info set might be 1/2 × 1/3 × 1/4 × 1/5 = 1/120, where 1/2 × 1/4 = 1/8 is Player 1's contribution to reaching this state and 1/3 × 1/5 = 1/15 is Player 2's contribution. Note that the overall probability is equal to the product of each player's contribution (1/8 × 1/15 = 1/120). In CFR, each player's contribution to the overall reach probability is tracked separately.
 
 ## Running the code
 
