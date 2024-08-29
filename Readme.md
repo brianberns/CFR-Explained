@@ -4,17 +4,19 @@
 
 Counterfactual Regret Minimization (CFR) is an important machine learning algorithm for playing "imperfect information" games. These are games where some information about the state of the game is hidden from the players, but the rules and objectives are known. This is common, for example, in card games, where each player's cards are hidden from the other players. Thus, chess is a perfect information game (nothing is hidden), while Poker, Clue, Battleship, and Stratego are imperfect information games.
 
-This is my attempt to explain CFR and its variations in a concise, simple way using code. As I was learning about CFR, I found some aspects difficult to understand, due to confusing terminology and poor implementations (in my opinion). The dense math of academic papers that introduced these algorithms didn't help much either.
+This repository is my attempt to explain CFR and its variations in a concise, simple way using code. As I was learning about CFR, I found some aspects difficult to understand, due to confusing terminology and poor implementations (in my opinion). The dense math of academic papers that introduced these algorithms didn't help much either.
 
 ## Implementations
 
 Each script in this repository demonstrates a particular variation of CFR in F#, a functional programming language for the .NET platform. For clarity, each script is self-contained – there is no code shared between them.
 
-Functional programming means that these implementations contain no side-effects or mutable variables. I find that such code is much easier to understand and reason about than the kind of Python typically used in machine learning. (I think the ML community could really benefit from better software engineering, but that's a topic for another day.)
+Functional programming means that these implementations contain no side-effects or mutable variables. I find that such code is easier to understand and reason about than the kind of Python typically used in machine learning. (I think the ML community could really benefit from better software engineering, but that's a topic for another day.)
 
 ## Kuhn Poker
 
-Like many other introductions to CFR, I've used [Kuhn Poker](https://en.wikipedia.org/wiki/Kuhn_poke) in these examples because it is a very simple imperfect information card game, but does not have an obvious "best" strategy.
+Like most other introductions to CFR, I've used [Kuhn Poker](https://en.wikipedia.org/wiki/Kuhn_poke) in these examples because it is a very simple imperfect information card game, but does not have an obvious "best" strategy.
+
+At each decision point in Kuhn poker, the active player always has a choice of two actions: bet/call or check/fold.
 
 Note that Kuhn poker is zero-sum, two player game. In other words, one player's gain is the other player's loss. For simplicity, the implementations of CFR contained here rely on this fact, and can be adapted to other zero-sum, two player imperfect information games as well.
 
@@ -28,7 +30,7 @@ For example, in Kuhn Poker, a player holding the Jack should never call a bet (i
 
 ## Information sets
 
-An information set ("info set") contains all of the current player's information about the state of the game at a given decision point. For example, in Kuhn Poker, `Qcb` describes the situation where Player 1 has a Queen (`Q`) and checked (`c`) as the first action, then Player 2 bet (`b`). Player 1 now has the option of calling or folding, but does not know whether Player 2 has the Jack or the King. There are 12 such info sets in Kuhn Poker:
+An information set ("info set") contains all of the active player's information about the state of the game at a given decision point. For example, in Kuhn Poker, info set `Qcb` describes the situation where Player 1 has a Queen (`Q`) and checked (`c`) as the first action, then Player 2 bet (`b`). Player 1 now has the option of calling or folding, but does not know whether Player 2 has the Jack or the King. There are 12 such info sets in Kuhn Poker:
 
 | Player 1's turn | Player 2's turn |
 | --------------- |---------------- |
@@ -39,13 +41,11 @@ An information set ("info set") contains all of the current player's information
 | `Qcb`           | `Kb`            |
 | `Kcb`           | `Kc`            |
 
-We use `c` to represent both a check and a fold, and we use `b` to represent both a bet and a call.
-
 The info sets in a game are the internal nodes of a tree. Each valid action at a decision point leads to either a child info set or a "terminal" state where the game is over.
 
 ## Regret matching
 
-For each info set, we are going to track the total utility ("regret") of each possible action so far. This is stored as a vector, indexed by action (index 0 for bet and index 1 for call in Kuhn Poker):
+For each info set, we are going to track the total regret of each possible action over time. This is stored as a vector, indexed by action (index 0 for bet/call and index 1 for check/fold in Kuhn Poker):
 
 ```fsharp
 type InformationSet =
