@@ -14,15 +14,17 @@ Functional programming means that these implementations contain no side-effects 
 
 ## Kuhn Poker
 
-Like other introductions to CFR, I've used [Kuhn Poker](https://en.wikipedia.org/wiki/Kuhn_poke) in these examples because it is a very simple imperfect information card game, but does not have an obvious "best" strategy.
+Like many other introductions to CFR, I've used [Kuhn Poker](https://en.wikipedia.org/wiki/Kuhn_poke) in these examples because it is a very simple imperfect information card game, but does not have an obvious "best" strategy.
 
-Note that Kuhn poker is zero-sum, two player game. In other words, one player's gain is the other player's loss. For simplicity, the implementations of CFR described here rely on this fact and can be adapted to other zero-sum, two player imperfect information games as well.
+Note that Kuhn poker is zero-sum, two player game. In other words, one player's gain is the other player's loss. For simplicity, the implementations of CFR contained here rely on this fact, and can be adapted to other zero-sum, two player imperfect information games as well.
 
 ## Regret
 
 "Regret" is really a very confusing term, and "counterfactual regret" even more so. In CFR, we're actually trying to choose the actions that have the *highest* regret, meaning that we most regret not choosing them in the past. (Like I said, confusing.) An action's regret might be positive (good) or negative (bad).
 
 I think it's much easier to conceptualize this as choosing actions that have the highest value, or utility, or advantage instead. In CFR, all of these terms mean roughly the same thing as regret.
+
+For example, in Kuhn Poker, a player holding the Jack should never call a bet (info sets `Jb` and `Jcb`), because the opponent is guaranteed to win. The regret of calling in this situation is -2, because the player loses two points.
 
 ## Information sets
 
