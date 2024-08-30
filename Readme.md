@@ -8,9 +8,9 @@ This repository is my attempt to explain CFR and its variations in a concise, si
 
 ## Implementations
 
-Each script in this repository demonstrates a particular variation of CFR in F#, a functional programming language for the .NET platform. For clarity, each script is self-contained – there is no code shared between them.
+Each script in this repository demonstrates a particular variation of CFR in F#, a functional programming language for the .NET platform. For clarity, each script is self-contained â€“ there is no code shared between them.
 
-Functional programming means that these implementations contain no side-effects or mutable variables. I find that such code is easier to understand and reason about than the kind of Python typically used in machine learning. (I think the ML community could really benefit from better software engineering, but that's a topic for another day.)
+Functional programming means that these implementations contain no side-effects or mutable variables. I find that such code is easier to understand and reason about than the kind of Python typically used in machine learning. (I think the ML community could really benefit from better software engineering, but that's a topic for another day.) Implementing CFR this way also makrs it much easier to parallelize.
 
 ## Kuhn Poker
 
@@ -93,7 +93,7 @@ The `getStrategy` function computes a "strategy" vector of action probabilities 
 
 ## Reach probabilities
 
-The probability of reaching a particular info set is the product of the probability of each action leading to it. For example, in a game of alternating turns, the probability of reaching an info set might be 1/2 × 1/3 × 1/4 × 1/5 = 1/120, where 1/2 × 1/4 = 1/8 is Player 1's contribution to reaching this state and 1/3 × 1/5 = 1/15 is Player 2's contribution. Note that the overall probability is equal to the product of each player's contribution (1/8 × 1/15 = 1/120). In CFR, each player's contribution to the overall reach probability is tracked separately.
+The probability of reaching a particular info set is the product of the probability of each action leading to it. For example, in a game of alternating turns, the probability of reaching an info set might be 1/2 Ã— 1/3 Ã— 1/4 Ã— 1/5 = 1/120, where 1/2 Ã— 1/4 = 1/8 is Player 1's contribution to reaching this state and 1/3 Ã— 1/5 = 1/15 is Player 2's contribution. Note that the overall probability is equal to the product of each player's contribution (1/8 Ã— 1/15 = 1/120). In CFR, each player's contribution to the overall reach probability is tracked separately.
 
 In our implementation, the reach probabilities are stored in a vector that is indexed by player: index 0 for player 1, and index 1 for Player 2. At the start of a game, the reach probability vector is `[| 1.0; 1.0 |]`, since neither player has made a decision yet.
 
