@@ -10,7 +10,7 @@ This repository is my attempt to explain CFR and its variations in a concise, si
 
 Each script in this repository demonstrates a particular variation of CFR in F#, a functional programming language for the .NET platform. For clarity, each script is self-contained – there is no code shared between them.
 
-Functional programming means that these implementations contain no side-effects or mutable variables. I find that such code is easier to understand and reason about than the kind of Python typically used in machine learning. (I think the ML community could really benefit from better software engineering, but that's a topic for another day.) Implementing CFR this way also makrs it much easier to parallelize.
+Functional programming means that these implementations contain no side-effects or mutable variables. I find that such code is easier to understand and reason about than the kind of Python typically used in machine learning. (I think the ML community could really benefit from better software engineering, but that's a topic for another day.) Implementing CFR this way also makes it much easier to parallelize.
 
 ## Kuhn Poker
 
