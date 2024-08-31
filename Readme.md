@@ -41,7 +41,7 @@ An information set ("info set") contains all of the active player's information 
 | `Qcb`           | `Kb`            |
 | `Kcb`           | `Kc`            |
 
-The info sets in a game are the internal nodes of a tree. Each valid action at a decision point leads to either a child info set or a "terminal" state where the game is over.
+The info sets in a game are the internal nodes of a directed acyclic graph. Each valid action at a decision point leads to either a child info set or a "terminal" state where the game is over.
 
 ## Regret matching
 
