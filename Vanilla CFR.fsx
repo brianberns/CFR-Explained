@@ -236,8 +236,7 @@ let run () =
     let util, infoSetMap = KuhnCfrTrainer.train numIterations
 
         // expected overall utility
-    printfn $"Expected average game value: %0.5f{(-1./18.0)} (for first player)"
-    printfn $"Computed average game value: %0.5f{util}\n"
+    printfn $"Average game value for first player: %0.5f{util}\n"
     assert(abs(util - -1.0/18.0) <= 0.02)
     assert(util = -0.058233174804782351 || numIterations <> 10000)   // exact value for known case
 
@@ -251,7 +250,7 @@ let run () =
         strategyMap
             |> Map.toSeq
             |> Seq.sortBy (fst >> String.length)
-    printfn "History   Bet    Check"
+    printfn "State   Bet     Check"
     for name, strategy in namedStrategies do
         let str =
             strategy
