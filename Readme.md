@@ -16,7 +16,7 @@ Functional programming means that these implementations contain no side-effects 
 
 Like most other introductions to CFR, I've used [Kuhn Poker](https://en.wikipedia.org/wiki/Kuhn_poke) in these examples because it is a very simple imperfect information card game, but does not have an obvious "best" strategy.
 
-At each decision point in Kuhn poker, the active player always has a choice of two actions: bet/call or check/fold.
+At each decision point in Kuhn poker, the active player always has a choice of two actions: bet/call is one action and check/fold is the other.
 
 Note that Kuhn poker is zero-sum, two player game. In other words, one player's gain is the other player's loss. For simplicity, the implementations of CFR contained here rely on this fact, and can be adapted to other zero-sum, two player imperfect information games as well.
 
