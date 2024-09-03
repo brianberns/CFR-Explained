@@ -116,10 +116,30 @@ let reachProbs' =
             else x)
 ```
 
-The result is a utility for each child action. From this, the utility of the info set can be calculated by weighting each child utility by its probability:
+We can then recurse by appending the action to the history so far:
+
+```fsharp
+loop (history + action) reachProbs)
+```
+
+The result is a utility for each legal action. These utilities must be negated, since it's the opponent's turn to play in each child node. The utility of the info set can be then calculated by weighting the utility of each child node by its probability of being chosen:
 
 ```fsharp
 let utility = actionUtilities * strategy
+```
+
+Lastly, we need to update the regrets and strategy for this info set. The regret for each action is the difference between its utility and the overall utility of the info set, weighted by the opponent's contribution to the reach probability of the info set:
+
+```fsharp
+let regrets =
+    reachProbs[opponent] * (actionUtilities - utility)
+```
+
+The strategy is weighted by the current player's contribution to the reach probability:
+
+```fsharp
+let strategy =
+    reachProbs[activePlayer] * strategy
 ```
 
 ## Running the code
