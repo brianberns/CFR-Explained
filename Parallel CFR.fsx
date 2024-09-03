@@ -252,7 +252,10 @@ module KuhnCfrTrainer =
 let run () =
 
         // train
-    let numIterations = 500000
+    let numIterations =
+        if fsi.CommandLineArgs.Length > 1 then
+            Int32.Parse(fsi.CommandLineArgs[1])
+        else 500000
     printfn $"Running Kuhn Poker parallel CFR for {numIterations} iterations"
     printfn $"Server garbage collection: {Runtime.GCSettings.IsServerGC}\n"
     let util, infoSetMap = KuhnCfrTrainer.train numIterations

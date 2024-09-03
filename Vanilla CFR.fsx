@@ -1,5 +1,6 @@
 #r "nuget: MathNet.Numerics.FSharp"
 
+open System
 open MathNet.Numerics.LinearAlgebra
 
 /// Kuhn poker
@@ -236,7 +237,10 @@ module KuhnCfrTrainer =
 let run () =
 
         // train
-    let numIterations = 10000
+    let numIterations =
+        if fsi.CommandLineArgs.Length > 1 then
+            Int32.Parse(fsi.CommandLineArgs[1])
+        else 10000
     printfn $"Running Kuhn Poker vanilla CFR for {numIterations} iterations\n"
     let util, infoSetMap = KuhnCfrTrainer.train numIterations
 
@@ -269,7 +273,7 @@ let run () =
         j >= 0.0 && j <= 1.0/3.0            // bet frequency for a Jack should be between 0 and 1/3
             && abs((k / j) - 3.0) <= 0.1)   // bet frequency for a King should be three times a Jack
 
-let timer = System.Diagnostics.Stopwatch.StartNew()
+let timer = Diagnostics.Stopwatch.StartNew()
 run ()
 printfn ""
 printfn $"Elapsed time: {timer}"
