@@ -232,7 +232,7 @@ module KuhnCfrTrainer =
                 // evaluate all permutations on each iteration
             let dealPairs =
                 seq {
-                    for i = 1 to numIterations do
+                    for i = 0 to numIterations - 1 do
                         for permutation in permutations do
                             yield i, permutation
                 }
