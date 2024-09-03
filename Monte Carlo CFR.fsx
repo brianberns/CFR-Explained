@@ -159,12 +159,12 @@ module KuhnCfrTrainer =
                 // get player's current strategy for this info set
             let strategy = InformationSet.getStrategy infoSet
 
-                // determine utility of this info set
+                // get utility of this info set
             let utility, keyedInfoSets =
 
                 if activePlayer = updatingPlayer then
 
-                        // determine utility of each action
+                        // get utility of each action
                     let actionUtilities, keyedInfoSets =
                         let utilities, keyedInfoSetArrays =
                             (KuhnPoker.actions, strategy)
@@ -180,7 +180,7 @@ module KuhnCfrTrainer =
                         getActiveUtilities utilities,
                         Seq.concat keyedInfoSetArrays
 
-                        // utility is action utilities weighted by their probabilities
+                // utility of this info set is action utilities weighted by action probabilities
                     let utility = actionUtilities * strategy
 
                         // accumulate updated regrets and strategy
