@@ -217,16 +217,24 @@ module KuhnCfrTrainer =
 
     /// Trains for the given number of iterations.
     let train numIterations =
+
+            // all possible deals
+        let permutations =
+            [|
+                for card0 in KuhnPoker.deck do
+                    for card1 in KuhnPoker.deck do
+                        if card0 <> card1 then
+                            [| card0; card1 |]
+            |]
+
         let utilities, infoSetMap =
 
-                // evaluate all six possible deals on each iteration
+                // evaluate all permutations on each iteration
             let dealPairs =
                 seq {
-                    for i = 0 to numIterations - 1 do
-                        for card0 in KuhnPoker.deck do
-                            for card1 in KuhnPoker.deck do
-                                if card0 <> card1 then
-                                    i, [| card0; card1 |]
+                    for i = 1 to numIterations do
+                        for permutation in permutations do
+                            yield i, permutation
                 }
 
                 // start with no known info sets
@@ -248,9 +256,7 @@ module KuhnCfrTrainer =
 
             // compute average utility per deal
         let utility =
-            let nDeals =
-                KuhnPoker.deck.Length * (KuhnPoker.deck.Length - 1)
-            Seq.sum utilities / float (nDeals * numIterations)
+            Seq.sum utilities / float (permutations.Length * numIterations)
         utility, infoSetMap
 
 let run () =
