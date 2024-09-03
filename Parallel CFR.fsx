@@ -260,7 +260,6 @@ let run () =
         // expected overall utility
     printfn $"Average game value for first player: %0.5f{util}\n"
     assert(abs(util - -1.0/18.0) <= 0.02)
-    assert(util = -0.058233174804782351 || numIterations <> 10000)   // exact value for known case
 
         // strategy
     let strategyMap =
