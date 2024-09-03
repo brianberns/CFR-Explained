@@ -150,7 +150,7 @@ module KuhnCfrTrainer =
         /// Recurses for non-terminal game state.
         and loopNonTerminal history reachProbs =
 
-                // get player's current strategy for this info set
+                // get info set for current state from this player's point of view
             let activePlayer = KuhnPoker.getActivePlayer history
             let infoSetKey = deal[activePlayer] + history
             let strategy =
