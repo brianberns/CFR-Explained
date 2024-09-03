@@ -167,15 +167,14 @@ module KuhnCfrTrainer =
                         // get utility of each action
                     let actionUtilities, keyedInfoSets =
                         let utilities, keyedInfoSetArrays =
-                            (KuhnPoker.actions, strategy)
-                                ||> Seq.map2 (fun action actionProb ->
+                            (KuhnPoker.actions, strategy.ToArray())
+                                ||> Array.map2 (fun action actionProb ->
                                     let reachProbs =
                                         updateReachProbabilities
                                             reachProbs
                                             activePlayer
                                             actionProb
                                     loop (history + action) reachProbs)
-                                |> Seq.toArray
                                 |> Array.unzip
                         getActiveUtilities utilities,
                         Seq.concat keyedInfoSetArrays
