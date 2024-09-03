@@ -210,14 +210,11 @@ module KuhnCfrTrainer =
         let utilities, infoSetMap =
 
                 // evaluate all permutations on each iteration
-            let deals =
+            let dealChunks =
                 seq {
                     for _ = 1 to numIterations do
-                        yield! permutations
+                        yield permutations
                 }
-
-                // chunk deals for parallel processing
-            let dealChunks = Seq.chunkBySize 150 deals
 
                 // start with no known info sets
             (Map.empty, dealChunks)
