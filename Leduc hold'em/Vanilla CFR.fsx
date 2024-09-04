@@ -358,7 +358,7 @@ let run () =
     printfn $"Average game value for first player: %0.5f{util}\n"
 
         // strategy
-    printfn "Strategy"
+    printfn "Strategy:"
     for (KeyValue(key, infoSet)) in infoSetMap do
         let actions =
             key

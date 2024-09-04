@@ -248,7 +248,7 @@ let run () =
     assert(abs(util - -1.0/18.0) <= 0.02)
 
         // strategy
-    printfn "Strategy"
+    printfn "Strategy:"
     for (KeyValue(key, infoSet)) in infoSetMap do
         let str =
             let strategy =
