@@ -251,11 +251,16 @@ module LeducCfrTrainer =
                     reachProbs
 
         /// Recurses for non-terminal game state.
-        and loopNonTerminal history activePlayer infoSetKey reachProbs =
+        and loopNonTerminal
+            history
+            activePlayer
+            infoSetKey
+            reachProbs =
 
                 // get info set for current state from this player's point of view
             let actions = LeducHoldem.getLegalActions history
-            let infoSet = getInfoSet infoSetKey infoSetMap actions.Length
+            let infoSet =
+                getInfoSet infoSetKey infoSetMap actions.Length
 
                 // get player's current strategy for this info set
             let strategy = InformationSet.getStrategy infoSet
@@ -282,7 +287,8 @@ module LeducCfrTrainer =
             let keyedInfoSets =
                 let infoSet =
                     let regrets =
-                        let opponent = (activePlayer + 1) % LeducHoldem.numPlayers
+                        let opponent =
+                            (activePlayer + 1) % LeducHoldem.numPlayers
                         reachProbs[opponent] * (actionUtilities - utility)
                     let strategy =
                         reachProbs[activePlayer] * strategy
@@ -303,14 +309,14 @@ module LeducCfrTrainer =
 
             // all possible deals
         let permutations =
-            List.permutations LeducHoldem.deck
+            LeducHoldem.deck
+                |> List.permutations
                 |> Seq.map (fun deck ->
                     Seq.toArray deck[0..1], deck[2])
                 |> Seq.toArray
 
         let utilities, infoSetMap =
 
-                // evaluate all permutations on each iteration
             let deals =
                 seq {
                     for i = 1 to numIterations do
@@ -319,11 +325,11 @@ module LeducCfrTrainer =
 
                 // start with no known info sets
             (Map.empty, deals)
-                ||> Seq.mapFold (fun infoSetMap (playerCards, communityCards) ->
+                ||> Seq.mapFold (fun infoSetMap (playerCards, communityCard) ->
 
                         // evaluate one game starting with this deal
                     let utility, keyedInfoSets =
-                        cfr infoSetMap playerCards communityCards
+                        cfr infoSetMap playerCards communityCard
 
                         // update info sets
                     let infoSetMap =
@@ -357,6 +363,7 @@ let run () =
             |> Seq.map (fun (KeyValue(name, infoSet)) ->
                 name, InformationSet.getAverageStrategy infoSet)
             |> Map
+    printfn "Strategy"
     for (KeyValue(key, strategy)) in strategyMap do
         let actions =
             key
