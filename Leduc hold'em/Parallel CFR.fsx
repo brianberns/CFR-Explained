@@ -313,7 +313,7 @@ module LeducCfrTrainer =
 
         let utilities, infoSetMap =
 
-                // each iteration evaluates all possible deals
+                // each iteration evaluates a chunk of deals
             let dealChunks =
                 let permutations =
                     LeducHoldem.deck
@@ -321,10 +321,11 @@ module LeducCfrTrainer =
                         |> Seq.map (fun deck ->
                             Seq.toArray deck[0..1], deck[2])
                         |> Seq.toArray
+                let chunkSize = 250
                 seq {
-                    for _ = 1 to numIterations do
-                        yield permutations
-                }
+                    for i = 0 to numIterations - 1 do
+                        yield permutations[i % permutations.Length]
+                } |> Seq.chunkBySize chunkSize
 
                 // start with no known info sets
             (Map.empty, dealChunks)
@@ -332,10 +333,10 @@ module LeducCfrTrainer =
 
                         // evaluate each deal in the given chunk
                     let utilities, updateChunks =
-                        Array.Parallel.map
-                            (fun (playerCards, communityCard) ->
-                                cfr infoSetMap playerCards communityCard)
-                            deals
+                        deals
+                            |> Array.Parallel.map
+                                (fun (playerCards, communityCard) ->
+                                    cfr infoSetMap playerCards communityCard)
                             |> Array.unzip
 
                         // update info sets
