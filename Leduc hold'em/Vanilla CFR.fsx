@@ -232,9 +232,14 @@ module LeducCfrTrainer =
                     (Array.last rounds).Length % LeducHoldem.numPlayers
                 let infoSetKey =
                     if rounds.Length = 2 then
-                        playerCards[activePlayer] + communityCard + history
+                        sprintf "%s%s %s"
+                            playerCards[activePlayer]
+                            communityCard
+                            history
                     else
-                        playerCards[activePlayer] + history
+                        sprintf "%s %s"
+                            playerCards[activePlayer]
+                            history
                 loopNonTerminal history activePlayer infoSetKey reachProbs
 
         /// Recurses for non-terminal game state.
@@ -344,13 +349,9 @@ let run () =
             |> Seq.map (fun (KeyValue(name, infoSet)) ->
                 name, InformationSet.getAverageStrategy infoSet)
             |> Map
-    let namedStrategies =
-        strategyMap
-            |> Map.toSeq
-            |> Seq.sortBy (fst >> String.length)
-    for name, strategy in namedStrategies do
+    for (KeyValue(key, strategy)) in strategyMap do
         let actions =
-            name
+            key
                 |> Seq.where Char.IsLower
                 |> Seq.toArray
                 |> String
@@ -360,7 +361,7 @@ let run () =
                 ||> Array.map2 (fun prob action ->
                     sprintf "%s: %0.5f" action prob)
                 |> String.concat ", "
-        printfn $"%-10s{name}:    {str}"
+        printfn $"%-10s{key}:    {str}"
 
 let timer = Diagnostics.Stopwatch.StartNew()
 run ()
