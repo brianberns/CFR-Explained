@@ -322,7 +322,7 @@ module LeducCfrTrainer =
 
             // compute average utility per deal
         let utility =
-            Seq.sum utilities / float (permutations.Length * numIterations)
+            Seq.sum utilities / float numIterations
         utility, infoSetMap
 
 let run () =
@@ -331,7 +331,7 @@ let run () =
     let numIterations =
         if fsi.CommandLineArgs.Length > 1 then
             Int32.Parse(fsi.CommandLineArgs[1])
-        else 10000
+        else 50000
     printfn $"Running Leduc Hold'em vanilla CFR for {numIterations} iterations\n"
     let util, infoSetMap = LeducCfrTrainer.train numIterations
 
