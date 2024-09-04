@@ -26,16 +26,6 @@ module LeducHoldem =
     /// Number of players.
     let numPlayers = 2
 
-    /// Available player actions.
-    let actions =
-        [|
-            "x"   // check
-            "f"   // fold
-            "c"   // call
-            "b"   // bet
-            "r"   // raise
-        |]
-
     /// Cards in the deck.
     let deck =
         [
@@ -44,18 +34,31 @@ module LeducHoldem =
             "K"; "K"   // King
         ]
 
+    (*
+     * Actions:
+     *    x: check
+     *    f: fold
+     *    c: call
+     *    b: bet
+     *    r: raise
+     *    d: community card dealt
+     *)
+
+    /// Action strings that end a round, without necessarily
+    /// ending the game.
+    let isRoundEnd = function
+        | "bc"
+        | "xx"
+        | "xbc"
+        | "brc"
+        | "xbrc" -> true
+        | _ -> false
+
     let isTerminal rounds =
         let round = Array.last rounds
         match String.tryLast round, rounds.Length with
             | Some 'f', _ -> true
-            | _, 2 ->
-                match round with
-                    | "bc"
-                    | "xx"
-                    | "xbc"
-                    | "brc"
-                    | "xbrc" -> true
-                    | _ -> false
+            | _, 2 -> isRoundEnd round
             | _ -> false
 
     /// Gets legal actions for active player.
@@ -132,18 +135,18 @@ type InformationSet =
 module InformationSet =
 
     /// Initial info set.
-    let zero =
-        let zero = DenseVector.zero LeducHoldem.actions.Length
+    let zero numActions =
+        let zero = DenseVector.zero numActions
         {
             RegretSum = zero
             StrategySum = zero
         }
 
     /// Uniform strategy: All actions have equal probability.
-    let private uniformStrategy =
+    let private uniformStrategy numActions =
         DenseVector.create
-            LeducHoldem.actions.Length
-            (1.0 / float LeducHoldem.actions.Length)
+            numActions
+            (1.0 / float numActions)
 
     /// Normalizes a strategy such that its elements sum to
     /// 1.0 (to represent action probabilities).
@@ -154,7 +157,7 @@ module InformationSet =
 
         let sum = Vector.sum strategy
         if sum > 0.0 then strategy / sum
-        else uniformStrategy
+        else uniformStrategy strategy.Count
 
     /// Computes regret-matching strategy from accumulated
     /// regrets.
@@ -177,10 +180,14 @@ module InformationSet =
 module LeducCfrTrainer =
 
     /// Obtains an info set corresponding to the given key.
-    let private getInfoSet infoSetKey infoSetMap =
-        infoSetMap
-            |> Map.tryFind infoSetKey
-            |> Option.defaultValue InformationSet.zero   // first visit
+    let private getInfoSet infoSetKey infoSetMap numActions =
+        match Map.tryFind infoSetKey infoSetMap with
+            | Some infoSet ->
+                assert(infoSet.RegretSum.Count = numActions)
+                assert(infoSet.StrategySum.Count = numActions)
+                infoSet
+            | None ->
+                InformationSet.zero numActions   // first visit
 
     /// Updates the active player's reach probability to reflect
     /// the probability of an action.
@@ -206,8 +213,19 @@ module LeducCfrTrainer =
             let rounds = history.Split('d')
             if LeducHoldem.isTerminal rounds then
                 let payoff =
-                    LeducHoldem.getPayoff playerCards communityCard rounds
+                    LeducHoldem.getPayoff
+                        playerCards
+                        communityCard
+                        rounds
                 float payoff, Seq.empty
+            elif LeducHoldem.isRoundEnd (Array.last rounds) then
+                let sign =
+                    match history with
+                        | "xbc" | "brc" -> -1.0
+                        | _ -> 1.0
+                let utility, keyedInfoSets =
+                    loop (history + "d") reachProbs
+                sign * utility, keyedInfoSets
             else
                 let activePlayer =
                     (Array.last rounds).Length % LeducHoldem.numPlayers
@@ -218,7 +236,8 @@ module LeducCfrTrainer =
 
                 // get info set for current state from this player's point of view
             let infoSetKey = playerCards[activePlayer] + history
-            let infoSet = getInfoSet infoSetKey infoSetMap
+            let actions = LeducHoldem.getLegalActions history
+            let infoSet = getInfoSet infoSetKey infoSetMap actions.Length
 
                 // get player's current strategy for this info set
             let strategy = InformationSet.getStrategy infoSet
@@ -226,7 +245,7 @@ module LeducCfrTrainer =
                 // get utility of each action
             let actionUtilities, keyedInfoSets =
                 let utilities, keyedInfoSetArrays =
-                    (LeducHoldem.actions, strategy.ToArray())
+                    (actions, strategy.ToArray())
                         ||> Array.map2 (fun action actionProb ->
                             let reachProbs =
                                 updateReachProbabilities
@@ -314,7 +333,6 @@ let run () =
         // expected overall utility
     printfn $"Average game value for first player: %0.5f{util}\n"
     assert(abs(util - -1.0/18.0) <= 0.02)
-    assert(util = -0.058233174804782351 || numIterations <> 10000)   // exact value for known case
 
         // strategy
     let strategyMap =
