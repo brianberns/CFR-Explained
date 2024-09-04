@@ -5,19 +5,23 @@ open MathNet.Numerics.LinearAlgebra
 
 module String =
 
+    /// Last character in the given string, if any.
     let tryLast (str : string) =
         if str.Length = 0 then None
         else Some str[str.Length - 1]
 
 module List =
 
+    /// Permutes the given list.
     // http://stackoverflow.com/questions/286427/calculating-permutations-in-f
     let rec permutations = function
-        | []      -> seq [List.empty]
-        | x :: xs -> Seq.collect (insertions x) (permutations xs)
+        | [] -> seq { List.empty }
+        | x :: xs ->
+            Seq.collect (insertions x) (permutations xs)
     and insertions x = function
-        | []             -> [[x]]
-        | (y :: ys) as xs -> (x::xs)::(List.map (fun x -> y::x) (insertions x ys))
+        | [] -> [[x]]
+        | (y :: ys) as xs ->
+            (x :: xs) :: (List.map (fun x -> y :: x) (insertions x ys))
 
 /// Leduc hold'em.
 // https://github.com/scfenton6/leduc-cfr-poker-bot
@@ -34,6 +38,13 @@ module LeducHoldem =
             "K"; "K"   // King
         ]
 
+    /// Rank of the given card.
+    let rank = function
+        | "J" -> 11
+        | "Q" -> 12
+        | "K" -> 13
+        | _ -> failwith "Unexpected"
+
     (*
      * Actions:
      *    x: check
@@ -41,19 +52,18 @@ module LeducHoldem =
      *    c: call
      *    b: bet
      *    r: raise
-     *    d: community card dealt
+     *    d: deal community card
      *)
 
     /// Action strings that end a round, without necessarily
     /// ending the game.
     let isRoundEnd = function
-        | "bc"
         | "xx"
-        | "xbc"
-        | "brc"
-        | "xbrc" -> true
+        | "bc" | "xbc"
+        | "brc" | "xbrc" -> true
         | _ -> false
 
+    /// Is the given game over?
     let isTerminal rounds =
         let round = Array.last rounds
         match String.tryLast round, rounds.Length with
@@ -71,35 +81,26 @@ module LeducHoldem =
             | Some 'r' -> [| "f"; "c" |]
             | _ -> failwith "Unexpected"
 
-    let private ante = 1
-
-    let private payoffs =
-        Map [
-            "xx", 0
-            "bf", 0
-            "xbf", 0
-            "brf", 2
-            "xbrf", 2
-            "bc", 2
-            "xbc", 2
-            "brc", 4
-            "xbrc", 4
-        ]
-
-    let private rank = function
-        | "J" -> 11
-        | "Q" -> 12
-        | "K" -> 13
-        | _ -> failwith "Unexpected"
-
     /// Gets payoff for the active player if the game is over.
     let getPayoff
         (playerCards : string[])
         communityCard
         (rounds : string[]) =
 
+        /// Amount contributed by each player before the game
+        /// starts.
+        let ante = 1
+
+        /// Payoff for the active player.
+        let pay = function
+            | "xx" | "bf" | "xbf" -> 0
+            | "brf" | "xbrf"
+            | "bc" | "xbc" -> 2
+            | "brc" | "xbrc" -> 4
+            | _ -> failwith "Unexpected"
+
         if rounds.Length = 2 then
-            let pot = ante + payoffs[rounds[0]] + 2 * payoffs[rounds[1]]
+            let pot = ante + pay rounds[0] + 2 * pay rounds[1]
             match String.tryLast rounds[1] with
                 | Some 'f' -> pot
                 | _ ->   // showdown
@@ -119,7 +120,7 @@ module LeducHoldem =
         else
             assert(rounds.Length = 1)
             assert(String.tryLast rounds[0] = Some 'f')
-            ante + payoffs[rounds[0]]
+            ante + pay rounds[0]
 
 /// An information set is a set of nodes in a game tree that are
 /// indistinguishable for a given player. This type gathers regrets
@@ -212,6 +213,8 @@ module LeducCfrTrainer =
         /// Top-level CFR loop.
         let rec loop (history : string) reachProbs =
             let rounds = history.Split('d')
+
+                // game is over?
             if LeducHoldem.isTerminal rounds then
                 let payoff =
                     LeducHoldem.getPayoff
@@ -219,28 +222,33 @@ module LeducCfrTrainer =
                         communityCard
                         rounds
                 float payoff, Seq.empty
+
+                // first round is over?
             elif LeducHoldem.isRoundEnd (Array.last rounds) then
                 let sign =
                     match history with
                         | "xbc" | "brc" -> -1.0
-                        | _ -> 1.0
+                        | _ -> 1.0   // active player to play again
                 let utility, keyedInfoSets =
                     loop (history + "d") reachProbs
                 sign * utility, keyedInfoSets
+
+                // player action
             else
                 let activePlayer =
-                    (Array.last rounds).Length % LeducHoldem.numPlayers
+                    (Array.last rounds).Length
+                        % LeducHoldem.numPlayers
                 let infoSetKey =
-                    if rounds.Length = 2 then
-                        sprintf "%s%s %s"
-                            playerCards[activePlayer]
-                            communityCard
-                            history
-                    else
-                        sprintf "%s %s"
-                            playerCards[activePlayer]
-                            history
-                loopNonTerminal history activePlayer infoSetKey reachProbs
+                    sprintf "%s%s %s"
+                        playerCards[activePlayer]
+                        (if rounds.Length = 2 then communityCard
+                         else "")
+                        history
+                loopNonTerminal
+                    history
+                    activePlayer
+                    infoSetKey
+                    reachProbs
 
         /// Recurses for non-terminal game state.
         and loopNonTerminal history activePlayer infoSetKey reachProbs =
