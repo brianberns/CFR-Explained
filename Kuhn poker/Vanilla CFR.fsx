@@ -206,11 +206,10 @@ module KuhnCfrTrainer =
 
         let utilities, infoSetMap =
 
-                // evaluate all permutations on each iteration
             let deals =
                 seq {
-                    for _ = 1 to numIterations do
-                        yield! permutations
+                    for i = 0 to numIterations - 1 do
+                        yield permutations[i % permutations.Length]
                 }
 
                 // start with no known info sets
@@ -230,7 +229,7 @@ module KuhnCfrTrainer =
 
             // compute average utility per deal
         let utility =
-            Seq.sum utilities / float (permutations.Length * numIterations)
+            Seq.sum utilities / float numIterations
         utility, infoSetMap
 
 let run () =
@@ -239,7 +238,7 @@ let run () =
     let numIterations =
         if fsi.CommandLineArgs.Length > 1 then
             Int32.Parse(fsi.CommandLineArgs[1])
-        else 10000
+        else 50000
     printfn $"Running Kuhn Poker vanilla CFR for {numIterations} iterations\n"
     let util, infoSetMap = KuhnCfrTrainer.train numIterations
 

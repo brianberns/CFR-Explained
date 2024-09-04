@@ -319,7 +319,7 @@ module LeducCfrTrainer =
 
             let deals =
                 seq {
-                    for i = 1 to numIterations do
+                    for i = 0 to numIterations - 1 do
                         yield permutations[i % permutations.Length]
                 }
 
