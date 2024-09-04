@@ -196,18 +196,17 @@ module KuhnCfrTrainer =
     /// Trains for the given number of iterations.
     let train numIterations =
 
-            // all possible deals
-        let permutations =
-            [|
-                for card0 in KuhnPoker.deck do
-                    for card1 in KuhnPoker.deck do
-                        if card0 <> card1 then
-                            [| card0; card1 |]
-            |]
-
         let utilities, infoSetMap =
 
+                // each iteration evaluates one possible deal
             let deals =
+                let permutations =
+                    [|
+                        for card0 in KuhnPoker.deck do
+                            for card1 in KuhnPoker.deck do
+                                if card0 <> card1 then
+                                    [| card0; card1 |]
+                    |]
                 seq {
                     for i = 0 to numIterations - 1 do
                         yield permutations[i % permutations.Length]

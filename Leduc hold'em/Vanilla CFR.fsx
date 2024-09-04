@@ -307,17 +307,16 @@ module LeducCfrTrainer =
     /// Trains for the given number of iterations.
     let train numIterations =
 
-            // all possible deals
-        let permutations =
-            LeducHoldem.deck
-                |> List.permutations
-                |> Seq.map (fun deck ->
-                    Seq.toArray deck[0..1], deck[2])
-                |> Seq.toArray
-
         let utilities, infoSetMap =
 
+                // each iteration evaluates one possible deal
             let deals =
+                let permutations =
+                    LeducHoldem.deck
+                        |> List.permutations
+                        |> Seq.map (fun deck ->
+                            Seq.toArray deck[0..1], deck[2])
+                        |> Seq.toArray
                 seq {
                     for i = 0 to numIterations - 1 do
                         yield permutations[i % permutations.Length]
@@ -373,7 +372,7 @@ let run () =
                 ||> Array.map2 (fun prob action ->
                     sprintf "%s: %0.5f" action prob)
                 |> String.concat ", "
-        printfn $"%-10s{key}:    {str}"
+        printfn $"%-11s{key}:    {str}"
 
 let timer = Diagnostics.Stopwatch.StartNew()
 run ()
