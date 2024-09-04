@@ -230,13 +230,17 @@ module LeducCfrTrainer =
             else
                 let activePlayer =
                     (Array.last rounds).Length % LeducHoldem.numPlayers
-                loopNonTerminal history activePlayer reachProbs
+                let infoSetKey =
+                    if rounds.Length = 2 then
+                        playerCards[activePlayer] + communityCard + history
+                    else
+                        playerCards[activePlayer] + history
+                loopNonTerminal history activePlayer infoSetKey reachProbs
 
         /// Recurses for non-terminal game state.
-        and loopNonTerminal history activePlayer reachProbs =
+        and loopNonTerminal history activePlayer infoSetKey reachProbs =
 
                 // get info set for current state from this player's point of view
-            let infoSetKey = playerCards[activePlayer] + history
             let actions = LeducHoldem.getLegalActions history
             let infoSet = getInfoSet infoSetKey infoSetMap actions.Length
 
