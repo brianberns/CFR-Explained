@@ -228,16 +228,14 @@ module KuhnCfrTrainer =
 
         let utilities, infoSetMap =
 
-                // evaluate all permutations on each iteration
-            let dealPairs =
+            let deals =
                 seq {
-                    for i = 0 to numIterations - 1 do
-                        for permutation in permutations do
-                            yield i, permutation
+                    for _ = 1 to numIterations do
+                        yield permutations[rng.Next(permutations.Length)]   // avoid bias
                 }
 
                 // start with no known info sets
-            (Map.empty, dealPairs)
+            (Map.empty, Seq.indexed deals)
                 ||> Seq.mapFold (fun infoSetMap (i, deal) ->
 
                         // evaluate one game starting with this deal
@@ -255,7 +253,7 @@ module KuhnCfrTrainer =
 
             // compute average utility per deal
         let utility =
-            Seq.sum utilities / float (permutations.Length * numIterations)
+            Seq.sum utilities / float numIterations
         utility, infoSetMap
 
 let run () =
@@ -264,7 +262,7 @@ let run () =
     let numIterations =
         if fsi.CommandLineArgs.Length > 1 then
             Int32.Parse(fsi.CommandLineArgs[1])
-        else 10000
+        else 500000
     printfn $"Running Kuhn Poker Monte Carlo CFR for {numIterations} iterations\n"
     let util, infoSetMap = KuhnCfrTrainer.train numIterations
 
@@ -273,26 +271,26 @@ let run () =
     assert(abs(util - -1.0/18.0) <= 0.02)
 
         // strategy
-    let strategyMap =
-        infoSetMap
-            |> Seq.map (fun (KeyValue(name, infoSet)) ->
-                name, InformationSet.getAverageStrategy infoSet)
-            |> Map
-    let namedStrategies =
-        strategyMap
-            |> Map.toSeq
-            |> Seq.sortBy (fst >> String.length)
-    printfn "State   Bet     Check"
-    for name, strategy in namedStrategies do
+    printfn "Strategy:"
+    for (KeyValue(key, infoSet)) in infoSetMap do
         let str =
-            strategy
-                |> Seq.map (sprintf "%0.5f")
-                |> String.concat " "
-        printfn $"%-3s{name}:    {str}"
+            let strategy =
+                InformationSet.getAverageStrategy infoSet
+            (strategy.ToArray(), KuhnPoker.actions)
+                ||> Array.map2 (fun prob action ->
+                    sprintf "%s: %0.5f" action prob)
+                |> String.concat ", "
+        printfn $"%-3s{key}:    {str}"
     assert(
-        let betAction = 0
-        let k = strategyMap["K"][betAction]
-        let j = strategyMap["J"][betAction]
+        let betAction =
+            Array.IndexOf(KuhnPoker.actions, "b")
+        let prob key =
+            let strategy =
+                infoSetMap[key]
+                    |> InformationSet.getAverageStrategy
+            strategy[betAction]
+        let k = prob "K"
+        let j = prob "J"
         j >= 0.0 && j <= 1.0/3.0            // bet frequency for a Jack should be between 0 and 1/3
             && abs((k / j) - 3.0) <= 0.1)   // bet frequency for a King should be three times a Jack
 

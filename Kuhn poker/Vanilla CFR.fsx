@@ -176,7 +176,8 @@ module KuhnCfrTrainer =
             let keyedInfoSets =
                 let infoSet =
                     let regrets =
-                        let opponent = (activePlayer + 1) % KuhnPoker.numPlayers
+                        let opponent =
+                            (activePlayer + 1) % KuhnPoker.numPlayers
                         reachProbs[opponent] * (actionUtilities - utility)
                     let strategy =
                         reachProbs[activePlayer] * strategy
