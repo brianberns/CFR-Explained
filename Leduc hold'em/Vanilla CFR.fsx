@@ -3,8 +3,25 @@
 open System
 open MathNet.Numerics.LinearAlgebra
 
-/// Kuhn poker
-module KuhnPoker =
+module String =
+
+    let tryLast (str : string) =
+        if str.Length = 0 then None
+        else Some str[str.Length - 1]
+
+module List =
+
+    // http://stackoverflow.com/questions/286427/calculating-permutations-in-f
+    let rec permutations = function
+        | []      -> seq [List.empty]
+        | x :: xs -> Seq.collect (insertions x) (permutations xs)
+    and insertions x = function
+        | []             -> [[x]]
+        | (y :: ys) as xs -> (x::xs)::(List.map (fun x -> y::x) (insertions x ys))
+
+/// Leduc hold'em.
+// https://github.com/scfenton6/leduc-cfr-poker-bot
+module LeducHoldem =
 
     /// Number of players.
     let numPlayers = 2
@@ -12,44 +29,93 @@ module KuhnPoker =
     /// Available player actions.
     let actions =
         [|
-            "b"   // bet/call
-            "c"   // check/fold
+            "x"   // check
+            "f"   // fold
+            "c"   // call
+            "b"   // bet
+            "r"   // raise
         |]
 
     /// Cards in the deck.
     let deck =
         [
-            "J"   // Jack
-            "Q"   // Queen
-            "K"   // King
+            "J"; "J"   // Jack
+            "Q"; "Q"   // Queen
+            "K"; "K"   // King
         ]
 
-    /// Gets zero-based index of active player.
-    let getActivePlayer (history : string) =
-        history.Length % numPlayers
+    let isTerminal rounds =
+        let round = Array.last rounds
+        match String.tryLast round, rounds.Length with
+            | Some 'f', _ -> true
+            | _, 2 ->
+                match round with
+                    | "bc"
+                    | "xx"
+                    | "xbc"
+                    | "brc"
+                    | "xbrc" -> true
+                    | _ -> false
+            | _ -> false
+
+    /// Gets legal actions for active player.
+    let getLegalActions history =
+        match String.tryLast history with
+            | None
+            | Some 'd'
+            | Some 'x' -> [| "x"; "b" |]
+            | Some 'b' -> [| "f"; "c"; "r" |]
+            | Some 'r' -> [| "f"; "c" |]
+            | _ -> failwith "Unexpected"
+
+    let private ante = 1
+
+    let private payoffs =
+        Map [
+            "xx", 0
+            "bf", 0
+            "xbf", 0
+            "brf", 2
+            "xbrf", 2
+            "xbc", 2
+            "brc", 4
+            "xbrc", 4
+        ]
+
+    let private rank = function
+        | "J" -> 11
+        | "Q" -> 12
+        | "K" -> 13
+        | _ -> failwith "Unexpected"
 
     /// Gets payoff for the active player if the game is over.
-    let getPayoff (cards : string[]) = function
+    let getPayoff
+        (playerCards : string[])
+        communityCard
+        (rounds : string[]) =
 
-            // opponent folds - active player wins
-        | "bc" | "cbc" -> Some 1
-
-            // showdown
-        | "cc" | "bb" | "cbb" as history ->
-            let payoff =
-                if history.Contains('b') then 2 else 1
-            let activePlayer = getActivePlayer history
-            let playerCard = cards[activePlayer]
-            let opponentCard =
-                cards[(activePlayer + 1) % numPlayers]
-            match playerCard, opponentCard with
-                | "K", _
-                | _, "J" -> payoff   // active player wins
-                | _ -> -payoff       // opponent wins
-                |> Some
-
-            // game not over
-        | _ -> None
+        if rounds.Length = 2 then
+            let pot = ante + payoffs[rounds[0]] + 2 * payoffs[rounds[1]]
+            match String.tryLast rounds[1] with
+                | Some 'f' -> pot
+                | _ ->   // showdown
+                    let activePlayer = rounds[1].Length % numPlayers
+                    let opponent = (activePlayer + 1) % numPlayers
+                    if playerCards[activePlayer] = communityCard then
+                        pot
+                    elif playerCards[opponent] = communityCard then
+                        -pot
+                    else
+                        let diff =
+                            rank playerCards[activePlayer]
+                                - rank playerCards[opponent]
+                        if diff > 0 then pot
+                        elif diff = 0 then 0
+                        else -pot
+        else
+            assert(rounds.Length = 1)
+            assert(String.tryLast rounds[0] = Some 'f')
+            ante + payoffs[rounds[0]]
 
 /// An information set is a set of nodes in a game tree that are
 /// indistinguishable for a given player. This type gathers regrets
@@ -67,7 +133,7 @@ module InformationSet =
 
     /// Initial info set.
     let zero =
-        let zero = DenseVector.zero KuhnPoker.actions.Length
+        let zero = DenseVector.zero LeducHoldem.actions.Length
         {
             RegretSum = zero
             StrategySum = zero
@@ -76,8 +142,8 @@ module InformationSet =
     /// Uniform strategy: All actions have equal probability.
     let private uniformStrategy =
         DenseVector.create
-            KuhnPoker.actions.Length
-            (1.0 / float KuhnPoker.actions.Length)
+            LeducHoldem.actions.Length
+            (1.0 / float LeducHoldem.actions.Length)
 
     /// Normalizes a strategy such that its elements sum to
     /// 1.0 (to represent action probabilities).
@@ -108,7 +174,7 @@ module InformationSet =
     let getAverageStrategy infoSet =
         normalize infoSet.StrategySum
 
-module KuhnCfrTrainer =
+module LeducCfrTrainer =
 
     /// Obtains an info set corresponding to the given key.
     let private getInfoSet infoSetKey infoSetMap =
@@ -133,22 +199,25 @@ module KuhnCfrTrainer =
 
     /// Evaluates the utility of the given deal via counterfactual
     /// regret minimization.
-    let private cfr infoSetMap deal =
+    let private cfr infoSetMap playerCards communityCard =
 
         /// Top-level CFR loop.
-        let rec loop history reachProbs =
-            match KuhnPoker.getPayoff deal history with
-                | Some payoff ->
-                    float payoff, Seq.empty   // game is over
-                | None ->
-                    loopNonTerminal history reachProbs
+        let rec loop (history : string) reachProbs =
+            let rounds = history.Split('d')
+            if LeducHoldem.isTerminal rounds then
+                let payoff =
+                    LeducHoldem.getPayoff playerCards communityCard rounds
+                float payoff, Seq.empty
+            else
+                let activePlayer =
+                    (Array.last rounds).Length % LeducHoldem.numPlayers
+                loopNonTerminal history activePlayer reachProbs
 
         /// Recurses for non-terminal game state.
-        and loopNonTerminal history reachProbs =
+        and loopNonTerminal history activePlayer reachProbs =
 
                 // get info set for current state from this player's point of view
-            let activePlayer = KuhnPoker.getActivePlayer history
-            let infoSetKey = deal[activePlayer] + history
+            let infoSetKey = playerCards[activePlayer] + history
             let infoSet = getInfoSet infoSetKey infoSetMap
 
                 // get player's current strategy for this info set
@@ -157,7 +226,7 @@ module KuhnCfrTrainer =
                 // get utility of each action
             let actionUtilities, keyedInfoSets =
                 let utilities, keyedInfoSetArrays =
-                    (KuhnPoker.actions, strategy.ToArray())
+                    (LeducHoldem.actions, strategy.ToArray())
                         ||> Array.map2 (fun action actionProb ->
                             let reachProbs =
                                 updateReachProbabilities
@@ -176,7 +245,7 @@ module KuhnCfrTrainer =
             let keyedInfoSets =
                 let infoSet =
                     let regrets =
-                        let opponent = (activePlayer + 1) % KuhnPoker.numPlayers
+                        let opponent = (activePlayer + 1) % LeducHoldem.numPlayers
                         reachProbs[opponent] * (actionUtilities - utility)
                     let strategy =
                         reachProbs[activePlayer] * strategy
@@ -197,28 +266,27 @@ module KuhnCfrTrainer =
 
             // all possible deals
         let permutations =
-            [|
-                for card0 in KuhnPoker.deck do
-                    for card1 in KuhnPoker.deck do
-                        if card0 <> card1 then
-                            [| card0; card1 |]
-            |]
+            List.permutations LeducHoldem.deck
+                |> Seq.map (fun deck ->
+                    Seq.toArray deck[0..1], deck[2])
+                |> Seq.toArray
 
         let utilities, infoSetMap =
 
                 // evaluate all permutations on each iteration
             let deals =
                 seq {
-                    for _ = 1 to numIterations do
-                        yield! permutations
+                    for i = 1 to numIterations do
+                        yield permutations[i % permutations.Length]
                 }
 
                 // start with no known info sets
             (Map.empty, deals)
-                ||> Seq.mapFold (fun infoSetMap deal ->
+                ||> Seq.mapFold (fun infoSetMap (playerCards, communityCards) ->
 
                         // evaluate one game starting with this deal
-                    let utility, keyedInfoSets = cfr infoSetMap deal
+                    let utility, keyedInfoSets =
+                        cfr infoSetMap playerCards communityCards
 
                         // update info sets
                     let infoSetMap =
@@ -240,8 +308,8 @@ let run () =
         if fsi.CommandLineArgs.Length > 1 then
             Int32.Parse(fsi.CommandLineArgs[1])
         else 10000
-    printfn $"Running Kuhn Poker vanilla CFR for {numIterations} iterations\n"
-    let util, infoSetMap = KuhnCfrTrainer.train numIterations
+    printfn $"Running Leduc Hold'em vanilla CFR for {numIterations} iterations\n"
+    let util, infoSetMap = LeducCfrTrainer.train numIterations
 
         // expected overall utility
     printfn $"Average game value for first player: %0.5f{util}\n"
