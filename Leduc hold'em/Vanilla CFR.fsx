@@ -358,13 +358,8 @@ let run () =
     printfn $"Average game value for first player: %0.5f{util}\n"
 
         // strategy
-    let strategyMap =
-        infoSetMap
-            |> Seq.map (fun (KeyValue(name, infoSet)) ->
-                name, InformationSet.getAverageStrategy infoSet)
-            |> Map
     printfn "Strategy"
-    for (KeyValue(key, strategy)) in strategyMap do
+    for (KeyValue(key, infoSet)) in infoSetMap do
         let actions =
             key
                 |> Seq.where Char.IsLower
@@ -372,6 +367,8 @@ let run () =
                 |> String
                 |> LeducHoldem.getLegalActions
         let str =
+            let strategy =
+                InformationSet.getAverageStrategy infoSet
             (strategy.ToArray(), actions)
                 ||> Array.map2 (fun prob action ->
                     sprintf "%s: %0.5f" action prob)

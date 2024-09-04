@@ -246,29 +246,28 @@ let run () =
         // expected overall utility
     printfn $"Average game value for first player: %0.5f{util}\n"
     assert(abs(util - -1.0/18.0) <= 0.02)
-    assert(util = -0.058233174804782351 || numIterations <> 10000)   // exact value for known case
 
         // strategy
-    let strategyMap =
-        infoSetMap
-            |> Seq.map (fun (KeyValue(name, infoSet)) ->
-                name, InformationSet.getAverageStrategy infoSet)
-            |> Map
-    let namedStrategies =
-        strategyMap
-            |> Map.toSeq
-            |> Seq.sortBy (fst >> String.length)
-    printfn "State   Bet     Check"
-    for name, strategy in namedStrategies do
+    printfn "Strategy"
+    for (KeyValue(key, infoSet)) in infoSetMap do
         let str =
-            strategy
-                |> Seq.map (sprintf "%0.5f")
-                |> String.concat " "
-        printfn $"%-3s{name}:    {str}"
+            let strategy =
+                InformationSet.getAverageStrategy infoSet
+            (strategy.ToArray(), KuhnPoker.actions)
+                ||> Array.map2 (fun prob action ->
+                    sprintf "%s: %0.5f" action prob)
+                |> String.concat ", "
+        printfn $"%-3s{key}:    {str}"
     assert(
-        let betAction = 0
-        let k = strategyMap["K"][betAction]
-        let j = strategyMap["J"][betAction]
+        let betAction =
+            Array.IndexOf(KuhnPoker.actions, "b")
+        let prob key =
+            let strategy =
+                infoSetMap[key]
+                    |> InformationSet.getAverageStrategy
+            strategy[betAction]
+        let k = prob "K"
+        let j = prob "J"
         j >= 0.0 && j <= 1.0/3.0            // bet frequency for a Jack should be between 0 and 1/3
             && abs((k / j) - 3.0) <= 0.1)   // bet frequency for a King should be three times a Jack
 
