@@ -337,7 +337,6 @@ let run () =
 
         // expected overall utility
     printfn $"Average game value for first player: %0.5f{util}\n"
-    assert(abs(util - -1.0/18.0) <= 0.02)
 
         // strategy
     let strategyMap =
@@ -349,19 +348,19 @@ let run () =
         strategyMap
             |> Map.toSeq
             |> Seq.sortBy (fst >> String.length)
-    printfn "State   Bet     Check"
     for name, strategy in namedStrategies do
+        let actions =
+            name
+                |> Seq.where Char.IsLower
+                |> Seq.toArray
+                |> String
+                |> LeducHoldem.getLegalActions
         let str =
-            strategy
-                |> Seq.map (sprintf "%0.5f")
-                |> String.concat " "
-        printfn $"%-3s{name}:    {str}"
-    assert(
-        let betAction = 0
-        let k = strategyMap["K"][betAction]
-        let j = strategyMap["J"][betAction]
-        j >= 0.0 && j <= 1.0/3.0            // bet frequency for a Jack should be between 0 and 1/3
-            && abs((k / j) - 3.0) <= 0.1)   // bet frequency for a King should be three times a Jack
+            (strategy.ToArray(), actions)
+                ||> Array.map2 (fun prob action ->
+                    sprintf "%s: %0.5f" action prob)
+                |> String.concat ", "
+        printfn $"%-10s{name}:    {str}"
 
 let timer = Diagnostics.Stopwatch.StartNew()
 run ()
