@@ -80,6 +80,7 @@ module LeducHoldem =
             "xbf", 0
             "brf", 2
             "xbrf", 2
+            "bc", 2
             "xbc", 2
             "brc", 4
             "xbrc", 4
