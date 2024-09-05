@@ -225,7 +225,7 @@ module LeducCfrTrainer =
                         playerCards
                         communityCard
                         rounds
-                float payoff, Seq.empty
+                float payoff, Array.empty
 
                 // first round is over?
             elif LeducHoldem.isRoundEnd (Array.last rounds) then
@@ -282,7 +282,7 @@ module LeducCfrTrainer =
                             loop (history + action) reachProbs)
                         |> Array.unzip
                 getActiveUtilities utilities,
-                Seq.concat keyedInfoSetArrays
+                Array.concat keyedInfoSetArrays
 
                 // utility of this info set is action utilities weighted by action probabilities
             let utility = actionUtilities * strategy
@@ -297,10 +297,10 @@ module LeducCfrTrainer =
                     let strategy =
                         reachProbs[activePlayer] * strategy
                     InformationSet.create regrets strategy
-                seq {
+                [|
                     yield! keyedInfoSets
                     yield infoSetKey, infoSet
-                }
+                |]
 
             utility, keyedInfoSets
 
