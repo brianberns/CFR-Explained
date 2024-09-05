@@ -187,28 +187,29 @@ module InformationSet =
  To run a script, install .NET and then execute the script in F# Interactive via `dotnet fsi`. For example:
 
 ```
-> dotnet fsi '.\Vanilla CFR.fsx'
+> dotnet fsi './Kuhn poker/Vanilla CFR.fsx'
 ```
 
 Expected output:
 
 ```
-Running Kuhn Poker vanilla CFR for 10000 iterations
+Running Kuhn Poker vanilla CFR for 50000 iterations
 
-Expected average game value: -0.05556 (for first player)
-Computed average game value: -0.05823
+Average game value for first player: -0.05817
 
-History   Bet    Check
-J  :    0.21587 0.78413
-K  :    0.66842 0.33158
-Q  :    0.00012 0.99988
-Jb :    0.00003 0.99997
-Jc :    0.33573 0.66427
-Kb :    0.99997 0.00003
-Kc :    0.99990 0.00010
-Qb :    0.33712 0.66288
-Qc :    0.00019 0.99981
-Jcb:    0.00002 0.99998
-Kcb:    0.99996 0.00004
-Qcb:    0.55388 0.44612
+Strategy:
+J  :    b: 0.22471, c: 0.77529
+Jb :    b: 0.00003, c: 0.99997
+Jc :    b: 0.33811, c: 0.66189
+Jcb:    b: 0.00002, c: 0.99998
+K  :    b: 0.65545, c: 0.34455
+Kb :    b: 0.99997, c: 0.00003
+Kc :    b: 0.99988, c: 0.00012
+Kcb:    b: 0.99996, c: 0.00004
+Q  :    b: 0.00014, c: 0.99986
+Qb :    b: 0.33643, c: 0.66357
+Qc :    b: 0.00023, c: 0.99977
+Qcb:    b: 0.56420, c: 0.43580
+
+Elapsed time: 00:00:00.5947431
 ```
