@@ -152,11 +152,18 @@ The utility and the updated information sets (including its updated child info s
 
 ## Training
 
-In order to use CFR effectively, we have to apply it the initial state of the game many times. Each CFR application is called an "iteration".
+In order to use CFR effectively, we have to apply it the initial state of the game many times. Each CFR application is called an "iteration". After each iteration, we can run CFR again using the updated info sets from the previous iteration, allowing the system to "learn" over time. Updates are incorporated by folding them into a map of info sets:
 
-After all of the iterations are complete, we can compute both the average expected utility of the game for each player, as well as the average strategy for each player to use. These results are guaranteed (in vanilla CFR) to converge on an optimal strategy ("Nash equilibrium") over time. We need to take the average because the raw strategies might "circle" around the optimum without ever reaching it. By taking the average, we find the strategy in the center of the circle.
+```fsharp
+let infoSetMap =
+    (infoSetMap, keyedInfoSets)
+        ||> Seq.fold (fun acc (key, infoSet) ->
+                Map.add key infoSet acc)
+```
 
-In addition to tracking the total regret of each action for an info set, we also track the sum of the strategies computed during each iteration of CFR:
+After all of the iterations are complete, we can compute both the average expected utility of the game for each player, as well as the average strategy for each player to use. These averaged results are guaranteed (in vanilla CFR) to converge on an optimal strategy ("Nash equilibrium") over time. We need to take the average (rather than using the results of the last iteration) because the raw strategies might "circle" around the optimum without ever reaching it. By taking the average, we find the strategy in the center of the circle.
+
+In order to compute this average strategy, we must track the sum of the strategies computed during each CFR iteration (alongside the accumlated regrets):
 
 ```fsharp
 type InformationSet =
@@ -166,9 +173,14 @@ type InformationSet =
         /// Sum of strategies accumulated so far by this info set.
         StrategySum : Vector<float>
     }
-```
 
-After many iterations, the *average* of all of these strategies is guaranteed (in vanilla CFR) to converge on an optimal strategy ("Nash equilibrium"). We need to take the average because the raw strategies might "circle" around the optimum without ever reaching it. By taking the average, we find the strategy in the center of the circle.
+module InformationSet =
+
+    ...
+
+    let getAverageStrategy infoSet =
+        normalize infoSet.StrategySum
+```
 
 ## Running the code
 
