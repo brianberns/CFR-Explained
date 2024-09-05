@@ -14,11 +14,11 @@ Functional programming means that these implementations contain no side-effects 
 
 ## Kuhn Poker
 
-These example start with solutions for [Kuhn Poker](https://en.wikipedia.org/wiki/Kuhn_poker). Kuhn poker is a good choice for explaining CFR because it is a simple imperfect information card game, but does not have an obvious "best" strategy.
+These example start with solutions for [Kuhn Poker](https://en.wikipedia.org/wiki/Kuhn_poker). Kuhn Poker is a good choice for explaining CFR because it is a simple imperfect information card game, but does not have an obvious "best" strategy.
 
-At each decision point in Kuhn poker, the active player always has a choice of two actions: bet/call is one action and check/fold is the other.
+At each decision point in Kuhn Poker, the active player always has a choice of two actions: bet/call is one action and check/fold is the other.
 
-Note that Kuhn poker is zero-sum, two player game. In other words, one player's gain is the other player's loss. For simplicity, the implementations of CFR contained here rely on this fact, and can be adapted to other zero-sum, two player imperfect information games as well.
+Note that Kuhn Poker is zero-sum, two player game. In other words, one player's gain is the other player's loss. For simplicity, the implementations of CFR contained here rely on this fact, and can be adapted to other zero-sum, two player imperfect information games as well.
 
 ## Regret
 
@@ -182,12 +182,25 @@ module InformationSet =
         normalize infoSet.StrategySum
 ```
 
+## Pruning
+
+Vanilla CFR must visit every info set on each iteration, which makes it prohibitively expensive for games with very large game trees. One way to improve the perfomance of vanilla CFR is to prune irrelevant subtrees. For example, if the reach probability of an info set is zero for both players, then it will contribute nothing to the update for that iteration, so it can be ignored:
+
+```fsharp
+if Vector.forall ((=) 0.0) reachProbs then
+    0.0, Array.empty        // prune
+else
+    loopNonTerminal history reachProbs
+```
+
+The results should be identical to vanilla CFR, execpt that it finishes faster. Unfortunately, this optimization doesn't speed up CFR for Kuhn Poker very much.
+
 ## Running the code
 
  To run a script, install .NET and then execute the script in F# Interactive via `dotnet fsi`. For example:
 
 ```
-> dotnet fsi './Kuhn poker/Vanilla CFR.fsx'
+> dotnet fsi './Kuhn Poker/Vanilla CFR.fsx'
 ```
 
 Expected output:
