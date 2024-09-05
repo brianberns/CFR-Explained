@@ -369,7 +369,8 @@ let run () =
         if fsi.CommandLineArgs.Length > 1 then
             Int32.Parse(fsi.CommandLineArgs[1])
         else 50000
-    printfn $"Running Leduc Hold'em parallel CFR for {numIterations} iterations\n"
+    printfn $"Running Leduc Hold'em parallel CFR for {numIterations} iterations"
+    printfn $"Server garbage collection: {Runtime.GCSettings.IsServerGC}\n"
     let util, infoSetMap = LeducCfrTrainer.train numIterations
 
         // expected overall utility
