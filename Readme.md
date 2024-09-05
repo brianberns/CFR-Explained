@@ -4,7 +4,7 @@
 
 Counterfactual Regret Minimization (CFR) is an important machine learning algorithm for playing "imperfect information" games. These are games where some information about the state of the game is hidden from the players, but the rules and objectives are known. This is common, for example, in card games, where each player's cards are hidden from the other players. Thus, chess is a perfect information game (nothing is hidden), while Poker, Clue, Battleship, and Stratego are imperfect information games.
 
-This repository is my attempt to explain CFR and its variations in a concise, simple way using code. As I was learning about CFR, I found some aspects difficult to understand, due to confusing terminology and implementations (in my opinion). I also found that the dense math of academic papers that introduced these algorithms didn't help much to explain them.
+This repository is my attempt to explain CFR and some of its variations in a concise, simple way using code. As I was learning about CFR, I found some aspects difficult to understand, due to confusing terminology and implementations (in my opinion). I also found that the dense math of academic papers that introduced these algorithms didn't help much to explain them.
 
 ## Implementations
 
@@ -14,7 +14,7 @@ Functional programming means that these implementations contain no side-effects 
 
 ## Kuhn Poker
 
-Like most other introductions to CFR, I've used [Kuhn Poker](https://en.wikipedia.org/wiki/Kuhn_poke) in these examples because it is a very simple imperfect information card game, but does not have an obvious "best" strategy.
+These example start with solutions for [Kuhn Poker](https://en.wikipedia.org/wiki/Kuhn_poker). Kuhn poker is a good choice for explaining CFR because it is a simple imperfect information card game, but does not have an obvious "best" strategy.
 
 At each decision point in Kuhn poker, the active player always has a choice of two actions: bet/call is one action and check/fold is the other.
 
@@ -26,7 +26,7 @@ Note that Kuhn poker is zero-sum, two player game. In other words, one player's 
 
 I think it's much easier to conceptualize this as choosing actions that have the highest value, or utility, or advantage instead. In CFR, all of these terms mean roughly the same thing as regret.
 
-For example, in Kuhn Poker, a player holding the Jack should never call a bet (info sets `Jb` and `Jcb`), because the opponent is guaranteed to win. The regret of calling in this situation is -2, because the player loses two points.
+For example, in Kuhn Poker, a player holding the Jack should never call a bet (info sets `Jb` and `Jcb`), because the opponent is guaranteed to win. The regret of calling in this situation is -2, because the player loses two points. (One for calling, and one for the ante.)
 
 ## Information sets
 
@@ -93,7 +93,7 @@ The `getStrategy` function computes a "strategy" vector of action probabilities 
 
 ## Reach probabilities
 
-The probability of reaching a particular info set is the product of the probability of each action leading to it. For example, in a game of alternating turns, the probability of reaching an info set might be 1/2 × 1/3 × 1/4 × 1/5 = 1/120, where 1/2 × 1/4 = 1/8 is Player 1's contribution to reaching this state and 1/3 × 1/5 = 1/15 is Player 2's contribution. Note that the overall probability is equal to the product of each player's contribution (1/8 × 1/15 = 1/120). In CFR, each player's contribution to the overall reach probability is tracked separately.
+The probability of reaching a particular info set is the product of the probability of each action leading to it. For example, in a game of alternating turns, the probability of reaching an info set might be 1/2 × 1/3 × 1/4 × 1/5 = 1/120, where 1/2 × 1/4 = 1/8 is Player 1's contribution to reaching this state and 1/3 × 1/5 = 1/15 is Player 2's contribution. Note that the overall reach probability of an info set is equal to the product of each player's contribution (1/8 × 1/15 = 1/120). In CFR, each player's contribution to the overall reach probability is tracked separately.
 
 In our implementation, the reach probabilities are stored in a vector that is indexed by player: index 0 for player 1, and index 1 for Player 2. At the start of a game, the reach probability vector is `[| 1.0; 1.0 |]`, since neither player has made a decision yet.
 
@@ -141,6 +141,22 @@ The strategy is weighted by the current player's contribution to the reach proba
 let strategy =
     reachProbs[activePlayer] * strategy
 ```
+
+## Average strategy
+
+In addition to tracking the total regret of each action for an info set, we also track the sum of the strategies computed during each iteration of CFR:
+
+```fsharp
+type InformationSet =
+    {
+        ...
+
+        /// Sum of strategies accumulated so far by this info set.
+        StrategySum : Vector<float>
+    }
+```
+
+After many iterations, the *average* of all of these strategies is guaranteed (in vanilla CFR) to converge on an optimal strategy ("Nash equilibrium"). We need to take the average because the raw strategies might "circle" around the optimum without ever reaching it. By taking the average, we find the strategy in the center of the circle.
 
 ## Running the code
 
