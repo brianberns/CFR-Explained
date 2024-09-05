@@ -144,7 +144,7 @@ module KuhnCfrTrainer =
         let rec loop history reachProbs =
             match KuhnPoker.getPayoff deal history with
                 | Some payoff ->
-                    float payoff, Seq.empty   // game is over
+                    float payoff, Array.empty   // game is over
                 | None ->
                     loopNonTerminal history reachProbs
 
@@ -177,7 +177,7 @@ module KuhnCfrTrainer =
                                     loop (history + action) reachProbs)
                                 |> Array.unzip
                         getActiveUtilities utilities,
-                        Seq.concat keyedInfoSetArrays
+                        Array.concat keyedInfoSetArrays
 
                 // utility of this info set is action utilities weighted by action probabilities
                     let utility = actionUtilities * strategy
@@ -192,10 +192,10 @@ module KuhnCfrTrainer =
                             let strategy =
                                 reachProbs[activePlayer] * strategy
                             InformationSet.accumulate regrets strategy infoSet
-                        seq {
+                        [|
                             yield! keyedInfoSets
                             yield infoSetKey, infoSet
-                        }
+                        |]
 
                     utility, keyedInfoSets
 
