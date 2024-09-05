@@ -142,7 +142,19 @@ let strategy =
     reachProbs[activePlayer] * strategy
 ```
 
-## Average strategy
+The computed regrets and strategy are used to update the info set:
+
+```fsharp
+InformationSet.accumulate regrets strategy infoSet
+```
+
+The utility and the updated information sets (including its updated child info sets) are then returned to the caller.
+
+## Training
+
+In order to use CFR effectively, we have to apply it the initial state of the game many times. Each CFR application is called an "iteration".
+
+After all of the iterations are complete, we can compute both the average expected utility of the game for each player, as well as the average strategy for each player to use. These results are guaranteed (in vanilla CFR) to converge on an optimal strategy ("Nash equilibrium") over time. We need to take the average because the raw strategies might "circle" around the optimum without ever reaching it. By taking the average, we find the strategy in the center of the circle.
 
 In addition to tracking the total regret of each action for an info set, we also track the sum of the strategies computed during each iteration of CFR:
 
