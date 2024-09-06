@@ -202,7 +202,7 @@ We can prune the game tree further, to speed up CFR even more. Instead of explor
 Two ways of using this approach in CFR are:
 
 * Outcome sampling: At each info set, one action is chosen randomly for evaluation.
-* External sampling: For each iteration, pick one of the players as the "updating" player (alternating between players each iteration). For the updating player, explore every action and update their info sets as in vanilla CFR. For the opposing player, sample one action at random (with probabilities proportional to that info set's strategy) and do not update their info sets.
+* External sampling: For each iteration, pick one of the players as the "updating" player (alternating between players each iteration). For the updating player, explore every action and update their info sets, as in vanilla CFR. For the opposing player, sample one action at random (with probabilities proportional to that info set's current strategy) and do not update their info sets.
 
 To do this, pass the index of the updating player to the CFR function. Then, within the function, test whether the active player in this info set is the updating player. If not, pick a single action to evaluate:
 
@@ -210,6 +210,9 @@ To do this, pass the index of the updating player to the CFR function. Then, wit
 let private cfr infoSetMap deal updatingPlayer =
 
     ...
+
+        // get player's current strategy for this info set
+    let strategy = InformationSet.getStrategy infoSet
 
     let utility, keyedInfoSets =
 
@@ -232,9 +235,11 @@ let private cfr infoSetMap deal updatingPlayer =
 In the training loop, alternate the updating player on each iteration:
 
 ```fsharp
-let utility, keyedInfoSets =
-    let updatingPlayer = i % KuhnPoker.numPlayers
-    cfr infoSetMap deal updatingPlayer
+(Map.empty, Seq.indexed deals)
+    ||> Seq.mapFold (fun infoSetMap (i, deal) ->
+        let utility, keyedInfoSets =
+            let updatingPlayer = i % KuhnPoker.numPlayers
+            cfr infoSetMap deal updatingPlayer
 ```
 
 Since we're only updating one player's info sets on each interaction, we have to make sure that each player sees an unbiased set of deals:
@@ -246,7 +251,7 @@ for _ = 1 to numIterations do
 
 Without this change, we'd have a problem, since the number of possible deals in Kuhn Poker is even. Player 0 would always update on deals 0, 2, and 4, while Player 1 would always update on deals 1, 3, and 5.
 
-As with simple pruning, this optimization doesn't make much difference for a small game like Kuhn Poker, but can converge much more quickly for a large game. (As measured by elapsed time, not number of iterations.)
+As with simple pruning, this optimization doesn't make much difference for a small game like Kuhn Poker, but can converge more quickly for a large game (as measured by elapsed time, not number of iterations).
 
 ## Running the code
 
