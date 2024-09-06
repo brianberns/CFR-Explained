@@ -253,6 +253,18 @@ Without this change, we'd have a problem, since the number of possible deals in 
 
 As with simple pruning, this optimization doesn't make much difference for a small game like Kuhn Poker, but can converge more quickly for a large game (as measured by elapsed time, not number of iterations).
 
+## Leduc Hold'em
+
+[Leduc Hold'em](https://arxiv.org/pdf/1207.1411) is another imperfect information poker game that makes a good subject for CFR. It is larger than Kuhn Poker, containing 288 info sets, instead of just 12, but is still relatively simple.
+
+> In Leduc hold ’em, the deck consists of two suits with three cards in each suit. There are two rounds. In the first round a single private card is dealt to each player. In the second round a single board card is revealed. There is a two-bet maximum, with raise amounts of 2 and 4 in the first and second round, respectively. Both players start the first round with 1 already in the pot.
+
+I've provided an implementation of vanilla CFR for Leduc Hold'em, to make it easy to compare with Kuhn Poker.
+
+## Parallelization
+
+Another way to speed up CFR is to evaluate a batch of iterations in parallel, then update the info sets at the end of the batch. This results in fewer, but larger, updates.
+
 ## Running the code
 
  To run a script, install .NET and then execute the script in F# Interactive via `dotnet fsi`. For example:
