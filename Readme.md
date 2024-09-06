@@ -14,7 +14,7 @@ Functional programming means that these implementations contain no side-effects 
 
 ## Kuhn Poker
 
-These example start with solutions for [Kuhn Poker](https://en.wikipedia.org/wiki/Kuhn_poker). Kuhn Poker is a good choice for explaining CFR because it is a simple imperfect information card game, but does not have an obvious "best" strategy.
+These examples start with solutions for [Kuhn Poker](https://en.wikipedia.org/wiki/Kuhn_poker). Kuhn Poker is a good choice for explaining CFR because it is a simple imperfect information card game, but does not have an obvious "best" strategy.
 
 At each decision point in Kuhn Poker, the active player always has a choice of two actions: bet/call is one action and check/fold is the other.
 
@@ -163,7 +163,7 @@ let infoSetMap =
 
 After all of the iterations are complete, we can compute both the average expected utility of the game for each player, as well as the average strategy for each player to use. These averaged results are guaranteed (in vanilla CFR) to converge on an optimal strategy ("Nash equilibrium") over time. We need to take the average (rather than using the results of the last iteration) because the raw strategies might "circle" around the optimum without ever reaching it. By taking the average, we find the strategy in the center of the circle.
 
-In order to compute this average strategy, we must track the sum of the strategies computed during each CFR iteration (alongside the accumlated regrets):
+In order to compute this average strategy, we must track the sum of the strategies computed during each CFR iteration (alongside the accumulated regrets):
 
 ```fsharp
 type InformationSet =
@@ -184,7 +184,7 @@ module InformationSet =
 
 ## Pruning
 
-Vanilla CFR must visit every info set on each iteration, which makes it prohibitively expensive for games with very large game trees. One way to improve the perfomance of vanilla CFR is to prune irrelevant subtrees. For example, if the reach probability of an info set is zero for both players, then it will contribute nothing to the update for that iteration, so it can be ignored:
+Vanilla CFR must visit every info set on each iteration, which makes it prohibitively expensive for games with very large game trees. One way to improve the performance of vanilla CFR is to prune irrelevant subtrees. For example, if the reach probability of an info set is zero for both players, then it will contribute nothing to the update for that iteration, so it can be ignored:
 
 ```fsharp
 if Vector.forall ((=) 0.0) reachProbs then
@@ -193,7 +193,7 @@ else
     loopNonTerminal history reachProbs
 ```
 
-The results should be identical to vanilla CFR, execpt that it finishes faster. Unfortunately, this optimization doesn't speed up CFR for Kuhn Poker very much.
+The results should be identical to vanilla CFR, except that it finishes faster. Unfortunately, this optimization doesn't speed up CFR for Kuhn Poker very much.
 
 ## [Monte Carlo sampling](https://proceedings.neurips.cc/paper_files/paper/2009/file/00411460f7c92d2124a67ea0f4cb5f85-Paper.pdf)
 
