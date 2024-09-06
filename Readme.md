@@ -1,5 +1,22 @@
 # Counterfactual Regret Minimization Explained
 
+## Table of contents
+
+- [Overview](#overview)
+- [Implementations](#implementations)
+- [Kuhn Poker](#kuhn-poker)
+- [Regret](#regret)
+- [Information sets](#information-sets)
+- [Regret matching](#regret-matching)
+- [Reach probabilities](#reach-probabilities)
+- [Vanilla CFR](#vanilla-cfr)
+- [Training](#training)
+- [Pruning](#pruning)
+- [Monte Carlo sampling](#monte-carlo-sampling)
+- [Leduc Hold'em](#leduc-hold'em)
+- [Parallelization](#parallelization)
+- [Running the code](#running-the-code)
+
 ## Overview
 
 [Counterfactual Regret Minimization](http://modelai.gettysburg.edu/2013/cfr/cfr.pdf) (CFR) is an important machine learning algorithm for playing "imperfect information" games. These are games where some information about the state of the game is hidden from the players, but the rules and objectives are known. This is common, for example, in card games, where each player's cards are hidden from the other players. Thus, chess is a perfect information game (nothing is hidden), while Poker, Clue, Battleship, and Stratego are imperfect information games.
