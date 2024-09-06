@@ -13,7 +13,7 @@
 - [Training](#training)
 - [Pruning](#pruning)
 - [Monte Carlo sampling](#monte-carlo-sampling)
-- [Leduc Hold'em](#leduc-hold'em)
+- [Leduc Hold'em](#leduc-holdem)
 - [Parallelization](#parallelization)
 - [Running the code](#running-the-code)
 
