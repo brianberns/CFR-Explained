@@ -179,7 +179,7 @@ module KuhnCfrTrainer =
                         getActiveUtilities utilities,
                         Array.concat keyedInfoSetArrays
 
-                // utility of this info set is action utilities weighted by action probabilities
+                        // utility of this info set is action utilities weighted by action probabilities
                     let utility = actionUtilities * strategy
 
                         // accumulate updated regrets and strategy

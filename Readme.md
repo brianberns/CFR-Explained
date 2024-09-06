@@ -2,7 +2,7 @@
 
 ## Overview
 
-Counterfactual Regret Minimization (CFR) is an important machine learning algorithm for playing "imperfect information" games. These are games where some information about the state of the game is hidden from the players, but the rules and objectives are known. This is common, for example, in card games, where each player's cards are hidden from the other players. Thus, chess is a perfect information game (nothing is hidden), while Poker, Clue, Battleship, and Stratego are imperfect information games.
+[Counterfactual Regret Minimization](http://modelai.gettysburg.edu/2013/cfr/cfr.pdf) (CFR) is an important machine learning algorithm for playing "imperfect information" games. These are games where some information about the state of the game is hidden from the players, but the rules and objectives are known. This is common, for example, in card games, where each player's cards are hidden from the other players. Thus, chess is a perfect information game (nothing is hidden), while Poker, Clue, Battleship, and Stratego are imperfect information games.
 
 This repository is my attempt to explain CFR and some of its variations in a concise, simple way using code. As I was learning about CFR, I found some aspects difficult to understand, due to confusing terminology and implementations (in my opinion). I also found that the dense math of academic papers that introduced these algorithms didn't help much to explain them.
 
@@ -194,6 +194,57 @@ else
 ```
 
 The results should be identical to vanilla CFR, execpt that it finishes faster. Unfortunately, this optimization doesn't speed up CFR for Kuhn Poker very much.
+
+## [Monte Carlo sampling](https://proceedings.neurips.cc/paper_files/paper/2009/file/00411460f7c92d2124a67ea0f4cb5f85-Paper.pdf)
+
+We can prune the game tree further, to speed up CFR even more. Instead of exploring every valid action at each info set, we choose a random subset of actions and ignore the others. (Using random samples in this way is called a "Monte Carlo" algorithm.) This introduces noise into CFR, so it takes more iterations to converge, but is still faster overall.
+
+Two ways of using this approach in CFR are:
+
+* Outcome sampling: At each info set, one action is chosen randomly for evaluation.
+* External sampling: For each iteration, pick one of the players as the "updating" player (alternating between players each iteration). For the updating player, explore every action and update their info sets as in vanilla CFR. For the opposing player, sample one action at random (with probabilities proportional to that info set's strategy) and do not update their info sets.
+
+To do this, pass the index of the updating player to the CFR function. Then, within the function, test whether the active player in this info set is the updating player. If not, pick a single action to evaluate:
+
+```fsharp
+let private cfr infoSetMap deal updatingPlayer =
+
+    ...
+
+    let utility, keyedInfoSets =
+
+        if activePlayer = updatingPlayer then
+
+            ... same as vanilla CFR
+
+        else
+                // sample a single action according to the strategy
+            let action =
+                Categorical.Sample(rng, strategy.ToArray())
+                    |> Array.get KuhnPoker.actions
+            let utility, keyedInfoSets =
+                loop (history + action) reachProbs
+            -utility, keyedInfoSets
+
+    utility, keyedInfoSets
+```
+
+In the training loop, alternate the updating player on each iteration:
+
+```fsharp
+let utility, keyedInfoSets =
+    let updatingPlayer = i % KuhnPoker.numPlayers
+    cfr infoSetMap deal updatingPlayer
+```
+
+Since we're only updating one player's info sets on each interaction, we have to make sure that each player sees an unbiased set of deals:
+
+```fsharp
+for _ = 1 to numIterations do
+    yield permutations[rng.Next(permutations.Length)]   // avoid bias
+```
+
+Without this change, we'd have a problem, since the number of possible deals in Kuhn Poker is even. Player 0 would always update on deals 0, 2, and 4, while Player 1 would always update on deals 1, 3, and 5.
 
 ## Running the code
 
