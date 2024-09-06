@@ -246,6 +246,8 @@ for _ = 1 to numIterations do
 
 Without this change, we'd have a problem, since the number of possible deals in Kuhn Poker is even. Player 0 would always update on deals 0, 2, and 4, while Player 1 would always update on deals 1, 3, and 5.
 
+As with simple pruning, this optimization doesn't make much difference for a small game like Kuhn Poker, but can converge much more quickly for a large game. (As measured by elapsed time, not number of iterations.)
+
 ## Running the code
 
  To run a script, install .NET and then execute the script in F# Interactive via `dotnet fsi`. For example:
