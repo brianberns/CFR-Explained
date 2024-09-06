@@ -280,7 +280,72 @@ I've provided an implementation of vanilla CFR for Leduc Hold'em, to make it eas
 
 ## Parallelization
 
-Another way to speed up CFR is to evaluate a batch of iterations in parallel, then update the info sets at the end of the batch. This results in fewer, but larger, updates.
+Another way to speed up CFR is to evaluate a batch of games in parallel, then update the info sets at the end of the batch. This results in less frequent, but larger, updates.
+
+Since we'll be adding info sets across multiple evaluations, we no longer accumulate regrets and strategies within the recursive CFR function, but use mathematical addition of info sets instead:
+
+```fsharp
+static member (+)(a, b) =
+    {
+        RegretSum = a.RegretSum + b.RegretSum
+        StrategySum = a.StrategySum + b.StrategySum
+    }
+```
+
+During training, batch multiple deals into "chunks" that we'll evaluate in parallel:
+
+```fsharp
+    // each iteration evaluates a chunk of deals
+let dealChunks =
+    let permutations =
+        LeducHoldem.deck
+            |> List.permutations
+            |> Seq.map (fun deck ->
+                Seq.toArray deck[0..1], deck[2])
+            |> Seq.toArray
+    let chunkSize = 250   // empirically determined
+    seq {
+        for i = 0 to numIterations - 1 do
+            yield permutations[i % permutations.Length]
+    } |> Seq.chunkBySize chunkSize
+```
+
+In the training loop, we use F#'s `Array.Parallel` module to examine each deal in parallel and then map/reduce the resulting regrets and strategies to update the info sets:
+
+```fsharp
+(Map.empty, dealChunks)
+    ||> Seq.mapFold (fun infoSetMap deals ->
+
+            // evaluate each deal in the given chunk
+        let utilities, updateChunks =
+            deals
+                |> Array.Parallel.map
+                    (fun (playerCards, communityCard) ->
+                        cfr infoSetMap playerCards communityCard)
+                |> Array.unzip
+
+            // update info sets
+        let infoSetMap =
+            seq {
+                yield! Map.toSeq infoSetMap
+                for updates in updateChunks do
+                    yield! updates
+            }
+                |> Seq.groupBy fst
+                |> Seq.map (fun (key, group) ->
+                    let sum =
+                        group
+                            |> Seq.map snd
+                            |> Seq.reduce (+)   // accumulate regrets and strategies
+                    key, sum)
+                |> Map
+
+        Seq.sum utilities, infoSetMap)
+```
+
+On my computer, this version of CFR is twice as fast as vanilla CFR.
+
+It is also possible to parallelize CFR by breaking a large game tree into multiple subtrees, and evaluating them in parallel within a single iteration.
 
 ## Running the code
 
