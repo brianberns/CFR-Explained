@@ -343,7 +343,7 @@ In the training loop, we use F#'s `Array.Parallel` module to examine each deal i
         Seq.sum utilities, infoSetMap)
 ```
 
-On my computer, this version of CFR is roughly twice as fast as vanilla CFR.
+On my computer, this version of CFR is roughly twice as fast as vanilla CFR on Leduc Hold'em.
 
 It is also possible to parallelize CFR by breaking a large game tree into multiple subtrees, and evaluating them in parallel within a single iteration. Leduc Hold'em isn't large enough to warrant this approach, though.
 
