@@ -19,7 +19,7 @@
 
 ## Overview
 
-[Counterfactual Regret Minimization](http://modelai.gettysburg.edu/2013/cfr/cfr.pdf) (CFR) is an important machine learning algorithm for playing "imperfect information" games. These are games where some information about the state of the game is hidden from the players, but the rules and objectives are known. This is common, for example, in card games, where each player's cards are hidden from the other players. Thus, chess is a perfect information game (nothing is hidden), while Poker, Clue, Battleship, and Stratego are imperfect information games.
+[Counterfactual Regret Minimization](http://modelai.gettysburg.edu/2013/cfr/cfr.pdf) (CFR) is an important machine learning algorithm for playing "imperfect information" games. These are games where some information about the state of the game is hidden from the players, but the rules and objectives are known. This is common, for example, in card games where each player's cards are hidden from the other players. Thus, chess is a perfect information game (nothing is hidden), while Poker, Clue, Battleship, and Stratego are imperfect information games.
 
 This repository is my attempt to explain CFR and some of its variations in a concise, simple way using code. As I was learning about CFR, I found some aspects difficult to understand, due to confusing terminology and implementations (in my opinion). I also found that the dense math of academic papers that introduced these algorithms didn't help much to explain them.
 
@@ -39,15 +39,13 @@ Note that Kuhn Poker is zero-sum, two player game. In other words, one player's 
 
 ## Regret
 
-"Regret" is really a very confusing term, and "counterfactual regret" even more so. In CFR, we're actually trying to choose the actions that have the *highest* regret, meaning that we most regret not choosing them in the past. (Like I said, confusing.) An action's regret might be positive (good) or negative (bad).
-
-I think it's much easier to conceptualize this as choosing actions that have the highest value, or utility, or advantage instead. In CFR, all of these terms mean roughly the same thing as regret.
+"Regret" is really a very confusing term, and "counterfactual regret" even more so. In CFR, we're actually trying to choose the actions that have the *highest* regret, meaning that we most regret not choosing them in the past. (Like I said, confusing.) An action's regret might be positive (good) or negative (bad). I think it's much easier to conceptualize this as choosing actions that have the highest value, or utility, or advantage instead. In CFR, all of these terms mean roughly the same thing as regret.
 
 For example, in Kuhn Poker, a player holding the Jack should never call a bet (info sets `Jb` and `Jcb`), because the opponent is guaranteed to win. The regret of calling in this situation is -2, because the player loses two points. (One for calling, and one for the ante.)
 
 ## Information sets
 
-An information set ("info set") contains all of the active player's information about the state of the game at a given decision point. For example, in Kuhn Poker, info set `Qcb` describes the situation where Player 1 has a Queen (`Q`) and checked (`c`) as the first action, then Player 2 bet (`b`). Player 1 now has the option of calling or folding, but does not know whether Player 2 has the Jack or the King. There are 12 such info sets in Kuhn Poker:
+An information set ("info set") contains all of the active player's information about the state of the game at a given decision point. For example, in Kuhn Poker, info set `Qcb` describes the situation where Player 1 has the Queen (`Q`) and checked (`c`) as the first action, then Player 2 bet (`b`). Player 1 now has the option of calling or folding, but does not know whether Player 2 has the Jack or the King. There are 12 such info sets in Kuhn Poker:
 
 | Player 1's turn | Player 2's turn |
 | --------------- |---------------- |
@@ -59,6 +57,8 @@ An information set ("info set") contains all of the active player's information 
 | `Kcb`           | `Kc`            |
 
 The info sets in a game are the internal nodes of a directed acyclic graph. Each valid action at a decision point leads to either a child info set or a "terminal" state where the game is over.
+
+<img src="Kuhn info sets.png" />
 
 ## Regret matching
 
