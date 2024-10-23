@@ -160,55 +160,51 @@ module KuhnCfrTrainer =
             let strategy = InformationSet.getStrategy infoSet
 
                 // get utility of this info set
-            let utility, keyedInfoSets =
+            if activePlayer = updatingPlayer then
 
-                if activePlayer = updatingPlayer then
+                    // get utility of each action
+                let actionUtilities, keyedInfoSets =
+                    let utilities, keyedInfoSetArrays =
+                        (KuhnPoker.actions, strategy.ToArray())
+                            ||> Array.map2 (fun action actionProb ->
+                                let reachProbs =
+                                    updateReachProbabilities
+                                        reachProbs
+                                        activePlayer
+                                        actionProb
+                                loop (history + action) reachProbs)
+                            |> Array.unzip
+                    getActiveUtilities utilities,
+                    Array.concat keyedInfoSetArrays
 
-                        // get utility of each action
-                    let actionUtilities, keyedInfoSets =
-                        let utilities, keyedInfoSetArrays =
-                            (KuhnPoker.actions, strategy.ToArray())
-                                ||> Array.map2 (fun action actionProb ->
-                                    let reachProbs =
-                                        updateReachProbabilities
-                                            reachProbs
-                                            activePlayer
-                                            actionProb
-                                    loop (history + action) reachProbs)
-                                |> Array.unzip
-                        getActiveUtilities utilities,
-                        Array.concat keyedInfoSetArrays
+                    // utility of this info set is action utilities weighted by action probabilities
+                let utility = actionUtilities * strategy
 
-                        // utility of this info set is action utilities weighted by action probabilities
-                    let utility = actionUtilities * strategy
+                    // accumulate updated regrets and strategy
+                let keyedInfoSets =
+                    let infoSet =
+                        let regrets =
+                            let opponent =
+                                (activePlayer + 1) % KuhnPoker.numPlayers
+                            reachProbs[opponent] * (actionUtilities - utility)
+                        let strategy =
+                            reachProbs[activePlayer] * strategy
+                        InformationSet.accumulate regrets strategy infoSet
+                    [|
+                        yield! keyedInfoSets
+                        yield infoSetKey, infoSet
+                    |]
 
-                        // accumulate updated regrets and strategy
-                    let keyedInfoSets =
-                        let infoSet =
-                            let regrets =
-                                let opponent =
-                                    (activePlayer + 1) % KuhnPoker.numPlayers
-                                reachProbs[opponent] * (actionUtilities - utility)
-                            let strategy =
-                                reachProbs[activePlayer] * strategy
-                            InformationSet.accumulate regrets strategy infoSet
-                        [|
-                            yield! keyedInfoSets
-                            yield infoSetKey, infoSet
-                        |]
+                utility, keyedInfoSets
 
-                    utility, keyedInfoSets
-
-                else
-                        // sample a single action according to the strategy
-                    let action =
-                        Categorical.Sample(rng, strategy.ToArray())
-                            |> Array.get KuhnPoker.actions
-                    let utility, keyedInfoSets =
-                        loop (history + action) reachProbs
-                    -utility, keyedInfoSets
-
-            utility, keyedInfoSets
+            else
+                    // sample a single action according to the strategy
+                let action =
+                    Categorical.Sample(rng, strategy.ToArray())
+                        |> Array.get KuhnPoker.actions
+                let utility, keyedInfoSets =
+                    loop (history + action) reachProbs
+                -utility, keyedInfoSets
 
         [| 1.0; 1.0 |]
             |> DenseVector.ofArray
